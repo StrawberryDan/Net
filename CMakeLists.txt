@@ -45,7 +45,7 @@ if (NOT TARGET StrawberryNet)
 		src/Strawberry/Net/Endpoint.cpp
 		src/Strawberry/Net/Error.hpp)
 	target_include_directories(StrawberryNet PUBLIC src/)
-	target_link_libraries(StrawberryNet PUBLIC StrawberryCore)
+	target_link_libraries(StrawberryNet PUBLIC StrawberryCore OpenSSL::SSL OpenSSL::Crypto)
 	set_target_properties(StrawberryNet PROPERTIES CXX_STANDARD 20)
 
 
