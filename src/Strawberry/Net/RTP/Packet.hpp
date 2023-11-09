@@ -34,7 +34,7 @@ namespace Strawberry::Net::RTP
 
 
 		template <typename DataSource>
-			requires IO::Read<DataSource>
+			requires Core::IO::Read<DataSource>
 		static Core::Result<Packet, Error> Read(DataSource& data)
 		{
 			auto headerData = data.Read(sizeof(Header));
@@ -46,7 +46,7 @@ namespace Strawberry::Net::RTP
 			auto ccrcData = data.Read(header.csrcCount * sizeof(uint32_t));
 			if (!ccrcData) return ccrcData.Err();
 			std::vector<uint32_t> ccrc = ccrcData->template AsVector<uint32_t>();
-			for (auto& source : ccrc) source = FromBigEndian(source);
+			for (auto& source : ccrc) source = Core::FromBigEndian(source);
 
 			auto payloadData = data.Read(data.Size() - sizeof(Header) - sizeof(uint32_t) * header.csrcCount);
 			if (!payloadData) return payloadData.Err();
