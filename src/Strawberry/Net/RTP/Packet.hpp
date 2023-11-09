@@ -13,7 +13,7 @@
 #include <vector>
 
 
-namespace Strawberry::Core::Net::RTP
+namespace Strawberry::Net::RTP
 {
 	class Packet
 	{
@@ -35,7 +35,7 @@ namespace Strawberry::Core::Net::RTP
 
 		template <typename DataSource>
 			requires IO::Read<DataSource>
-		static Result<Packet, Error> Read(DataSource& data)
+		static Core::Result<Packet, Error> Read(DataSource& data)
 		{
 			auto headerData = data.Read(sizeof(Header));
 			if (!headerData) return headerData.Err();
@@ -64,7 +64,7 @@ namespace Strawberry::Core::Net::RTP
 
 		Packet(uint8_t type, uint16_t sequenceNumber, uint32_t timestamp, uint32_t ssrc)
 		{
-			Assert(type < 128);
+			Core::Assert(type < 128);
 			mHeader.payloadType    = type;
 			mHeader.sequenceNumber = Core::ToBigEndian(sequenceNumber);
 			mHeader.timestamp      = Core::ToBigEndian(timestamp);
@@ -72,12 +72,12 @@ namespace Strawberry::Core::Net::RTP
 		}
 
 
-		Packet(Header header, std::vector<uint32_t> contributingSources, IO::DynamicByteBuffer payload)
+		Packet(Header header, std::vector<uint32_t> contributingSources, Core::IO::DynamicByteBuffer payload)
 			: mHeader(header)
 			, mContributingSources(std::move(contributingSources))
 			, mPayload(std::move(payload))
 		{
-			Assert(mContributingSources.size() == mHeader.csrcCount);
+			Core::Assert(mContributingSources.size() == mHeader.csrcCount);
 		}
 
 
@@ -86,7 +86,7 @@ namespace Strawberry::Core::Net::RTP
 
 		void AddContributingSource(uint32_t source)
 		{
-			Assert(mHeader.csrcCount < 15);
+			Core::Assert(mHeader.csrcCount < 15);
 			mHeader.csrcCount += 1;
 			mContributingSources.push_back(source);
 		}
@@ -95,15 +95,15 @@ namespace Strawberry::Core::Net::RTP
 		[[nodiscard]] const std::vector<uint32_t>& GetContributingSources() const { return mContributingSources; }
 
 
-		[[nodiscard]] IO::DynamicByteBuffer GetPayload() const { return mPayload; }
+		[[nodiscard]] Core::IO::DynamicByteBuffer GetPayload() const { return mPayload; }
 
 
-		void SetPayload(IO::DynamicByteBuffer payload) { mPayload = std::move(payload); }
+		void SetPayload(Core::IO::DynamicByteBuffer payload) { mPayload = std::move(payload); }
 
 
-		[[nodiscard]] IO::DynamicByteBuffer AsBytes() const
+		[[nodiscard]] Core::IO::DynamicByteBuffer AsBytes() const
 		{
-			IO::DynamicByteBuffer bytes;
+			Core::IO::DynamicByteBuffer bytes;
 			bytes.Push(mHeader);
 			bytes.Push(mContributingSources);
 			bytes.Push(mPayload);
@@ -122,10 +122,10 @@ namespace Strawberry::Core::Net::RTP
 	private:
 		Header                mHeader;
 		std::vector<uint32_t> mContributingSources;
-		IO::DynamicByteBuffer mPayload;
+		Core::IO::DynamicByteBuffer mPayload;
 	};
 
 
 	static_assert(sizeof(Packet::Header) == 12);
 	static_assert(std::is_standard_layout_v<Packet::Header>);
-} // namespace Strawberry::Core::Net::RTP
+} // namespace Strawberry::Net::RTP

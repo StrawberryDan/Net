@@ -7,7 +7,7 @@
 #include <map>
 
 
-namespace Strawberry::Core::Net::HTTP
+namespace Strawberry::Net::HTTP
 {
 	std::string Verb::ToString() const
 	{
@@ -28,7 +28,7 @@ namespace Strawberry::Core::Net::HTTP
 		}
 	}
 
-	Optional<Verb> Verb::Parse(const std::string& string)
+	Core::Optional<Verb> Verb::Parse(const std::string& string)
 	{
 		static const std::map<std::string, Verb> mapping = {
 			{"POST",   Verb::POST },
@@ -38,12 +38,12 @@ namespace Strawberry::Core::Net::HTTP
 			{"DELETE", Verb::DEL  }
         };
 
-		std::string upper = ToUppercase(string);
+		std::string upper = Core::ToUppercase(string);
 		if (mapping.contains(upper)) { return mapping.at(upper); }
 		else { return {}; }
 	}
 
-	Optional<Version> Version::Parse(const std::string& string)
+	Core::Optional<Version> Version::Parse(const std::string& string)
 	{
 		static const std::map<std::string, Version> mapping = {
 			{"1.0", Version::VERSION_1_0},
@@ -73,4 +73,4 @@ namespace Strawberry::Core::Net::HTTP
 				std::abort();
 		}
 	}
-} // namespace Strawberry::Core::Net::HTTP
+} // namespace Strawberry::Net::HTTP

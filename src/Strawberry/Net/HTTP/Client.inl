@@ -8,7 +8,7 @@
 #include <regex>
 
 
-namespace Strawberry::Core::Net::HTTP
+namespace Strawberry::Net::HTTP
 {
 	template <typename S>
 	ClientBase<S>::ClientBase(const Net::Endpoint& endpoint)
@@ -79,7 +79,7 @@ namespace Strawberry::Core::Net::HTTP
 			}
 		}
 
-		IO::DynamicByteBuffer payload;
+		Core::IO::DynamicByteBuffer payload;
 		if (response.GetHeader().Contains("Transfer-Encoding"))
 		{
 			auto transferEncoding = response.GetHeader().Get("Transfer-Encoding");
@@ -90,8 +90,8 @@ namespace Strawberry::Core::Net::HTTP
 			}
 			else
 			{
-				Logging::Error("Unsupported value for Transfer-Encoding: {}", transferEncoding);
-				Unreachable();
+				Core::Logging::Error("Unsupported value for Transfer-Encoding: {}", transferEncoding);
+				Core::Unreachable();
 			}
 		}
 		else if (response.GetHeader().Contains("Content-Length"))
@@ -111,14 +111,14 @@ namespace Strawberry::Core::Net::HTTP
 
 
 	template <typename S>
-	IO::DynamicByteBuffer ClientBase<S>::ReadChunkedPayload()
+	Core::IO::DynamicByteBuffer ClientBase<S>::ReadChunkedPayload()
 	{
 		std::string       line;
 		std::smatch       matchResults;
 		static const auto chunkSizeLine     = std::regex(R"(([0123456789abcdefABCDEF]+)\r\n)");
 		size_t            sumOfChunkLengths = 0;
 
-		IO::DynamicByteBuffer payload;
+		Core::IO::DynamicByteBuffer payload;
 		while (true)
 		{
 			line = this->ReadLine();
@@ -135,7 +135,7 @@ namespace Strawberry::Core::Net::HTTP
 			auto bytesToRead = std::stoul(matchResults[1], nullptr, 16);
 			if (bytesToRead > 0)
 			{
-				IO::DynamicByteBuffer chunk;
+				Core::IO::DynamicByteBuffer chunk;
 				chunk.Reserve(bytesToRead);
 
 				chunk.Push(this->mSocket.Read(bytesToRead).Unwrap());
@@ -166,4 +166,4 @@ namespace Strawberry::Core::Net::HTTP
 		}
 		return line;
 	}
-} // namespace Strawberry::Core::Net::HTTP
+} // namespace Strawberry::Net::HTTP

@@ -11,7 +11,7 @@
 #include "nlohmann/json.hpp"
 
 
-namespace Strawberry::Core::Net::Websocket
+namespace Strawberry::Net::Websocket
 {
 	class Message
 	{
@@ -33,7 +33,7 @@ namespace Strawberry::Core::Net::Websocket
 
 
 		[[nodiscard]] std::string                         AsString() const;
-		[[nodiscard]] Result<nlohmann::json, std::string> AsJSON() const;
+		[[nodiscard]] Core::Result<nlohmann::json, std::string> AsJSON() const;
 		[[nodiscard]] uint16_t                            GetCloseStatusCode() const;
 
 
@@ -55,4 +55,4 @@ namespace Strawberry::Core::Net::Websocket
 		Ping,
 		Pong,
 	};
-} // namespace Strawberry::Core::Net::Websocket
+} // namespace Strawberry::Net::Websocket

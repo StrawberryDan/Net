@@ -12,17 +12,17 @@
 #include "Strawberry/Core/Markers.hpp"
 
 
-namespace Strawberry::Core::Net::Websocket
+namespace Strawberry::Net::Websocket
 {
-	template <IO::ReadWrite S>
+	template <Core::IO::ReadWrite S>
 	ClientBase<S>::~ClientBase()
 	{
 		Disconnect();
 	}
 
 
-	template <IO::ReadWrite S>
-	Result<NullType, Error> ClientBase<S>::SendMessage(const Message& message)
+	template <Core::IO::ReadWrite S>
+	Core::Result<Core::NullType, Error> ClientBase<S>::SendMessage(const Message& message)
 	{
 		auto result = TransmitFrame(message);
 		if (!result)
@@ -31,20 +31,20 @@ namespace Strawberry::Core::Net::Websocket
 		}
 		else
 		{
-			return NullType();
+			return Core::NullType();
 		}
 	}
 
 
-	template <IO::ReadWrite S>
-	Result<Message, Error> ClientBase<S>::ReadMessage()
+	template <Core::IO::ReadWrite S>
+	Core::Result<Message, Error> ClientBase<S>::ReadMessage()
 	{
 		return ReceiveFrame();
 	}
 
 
-	template <IO::ReadWrite S>
-	Result<Message, Error> ClientBase<S>::WaitMessage()
+	template <Core::IO::ReadWrite S>
+	Core::Result<Message, Error> ClientBase<S>::WaitMessage()
 	{
 		while (true)
 		{
@@ -61,11 +61,11 @@ namespace Strawberry::Core::Net::Websocket
 	}
 
 
-	template <IO::ReadWrite S>
+	template <Core::IO::ReadWrite S>
 	std::string ClientBase<S>::GenerateNonce()
 	{
 		std::random_device    randomDevice;
-		IO::DynamicByteBuffer nonce(16);
+		Core::IO::DynamicByteBuffer nonce(16);
 		while (nonce.Size() < 16)
 		{
 			auto val = randomDevice();
@@ -74,14 +74,14 @@ namespace Strawberry::Core::Net::Websocket
 				nonce.Push(reinterpret_cast<uint8_t*>(&val)[i]);
 			}
 		}
-		Assert(nonce.Size() == 16);
-		auto base64 = IO::Base64::Encode(nonce);
-		Assert(base64.size() == 24);
+		Core::Assert(nonce.Size() == 16);
+		auto base64 = Core::IO::Base64::Encode(nonce);
+		Core::Assert(base64.size() == 24);
 		return base64;
 	}
 
 
-	template <IO::ReadWrite S>
+	template <Core::IO::ReadWrite S>
 	uint8_t ClientBase<S>::GetOpcodeMask(Message::Opcode opcode)
 	{
 		switch (opcode)
@@ -104,8 +104,8 @@ namespace Strawberry::Core::Net::Websocket
 	}
 
 
-	template <IO::ReadWrite S>
-	Optional<Message::Opcode> ClientBase<S>::GetOpcodeFromByte(uint8_t byte)
+	template <Core::IO::ReadWrite S>
+	Core::Optional<Message::Opcode> ClientBase<S>::GetOpcodeFromByte(uint8_t byte)
 	{
 		using Opcode = Message::Opcode;
 
@@ -124,13 +124,13 @@ namespace Strawberry::Core::Net::Websocket
 			case 0xA:
 				return Opcode::Pong;
 			default:
-				DebugBreak();
+				Core::DebugBreak();
 				return {};
 		}
 	}
 
 
-	template <IO::ReadWrite S>
+	template <Core::IO::ReadWrite S>
 	uint32_t ClientBase<S>::GenerateMaskingKey()
 	{
 		std::random_device rd;
@@ -143,8 +143,8 @@ namespace Strawberry::Core::Net::Websocket
 	}
 
 
-	template <IO::ReadWrite S>
-	Result<size_t, Error>
+	template <Core::IO::ReadWrite S>
+	Core::Result<size_t, Error>
 	ClientBase<S>::TransmitFrame(const Message& frame)
 	{
 		if (mError == Error::Closed)
@@ -167,16 +167,16 @@ namespace Strawberry::Core::Net::Websocket
 		{
 			byte = 0b10000000 | 126;
 			bytesToSend.Push(byte);
-			bytesToSend.Push(ToBigEndian(static_cast<uint16_t>(bytes.size())));
+			bytesToSend.Push(Core::ToBigEndian(static_cast<uint16_t>(bytes.size())));
 		}
 		else if (bytes.size() <= std::numeric_limits<uint64_t>::max())
 		{
 			byte = 0b10000000 | 127;
 			bytesToSend.Push(byte);
-			bytesToSend.Push(ToBigEndian(static_cast<uint64_t>(bytes.size())));
+			bytesToSend.Push(Core::ToBigEndian(static_cast<uint64_t>(bytes.size())));
 		}
 
-		uint32_t maskingKey = ToBigEndian(GenerateMaskingKey());
+		uint32_t maskingKey = Core::ToBigEndian(GenerateMaskingKey());
 		bytesToSend.Push(maskingKey);
 
 		for (int i = 0; i < bytes.size(); i++)
@@ -194,13 +194,13 @@ namespace Strawberry::Core::Net::Websocket
 			switch (sendResult.Err())
 			{
 				default:
-					Unreachable();
+					Core::Unreachable();
 			}
 	}
 
 
-	template <IO::ReadWrite S>
-	Result<Message, Error> ClientBase<S>::ReceiveFrame()
+	template <Core::IO::ReadWrite S>
+	Core::Result<Message, Error> ClientBase<S>::ReceiveFrame()
 	{
 		if (mError == Error::Closed)
 		{
@@ -224,7 +224,7 @@ namespace Strawberry::Core::Net::Websocket
 				}
 				else
 				{
-					return Result<Message, Error>::Err(fragResultB.Err());
+					return Core::Result<Message, Error>::Err(fragResultB.Err());
 				}
 			}
 
@@ -242,8 +242,8 @@ namespace Strawberry::Core::Net::Websocket
 	}
 
 
-	template <IO::ReadWrite S>
-	Result<typename ClientBase<S>::Fragment, Error>
+	template <Core::IO::ReadWrite S>
+	Core::Result<typename ClientBase<S>::Fragment, Error>
 	ClientBase<S>::ReceiveFragment()
 	{
 		using Opcode = Message::Opcode;
@@ -265,7 +265,7 @@ namespace Strawberry::Core::Net::Websocket
 			}
 			else
 			{
-				DebugBreak();
+				Core::DebugBreak();
 				Disconnect(1002);
 				return Error::ProtocolError;
 			}
@@ -273,10 +273,10 @@ namespace Strawberry::Core::Net::Websocket
 		else
 			switch (byte.Err())
 			{
-				case IO::Error::Closed:
+				case Core::IO::Error::Closed:
 					return Error::Closed;
 				default:
-					Unreachable();
+					Core::Unreachable();
 			}
 
 		bool   masked;
@@ -284,15 +284,15 @@ namespace Strawberry::Core::Net::Websocket
 		if (auto byte = mSocket.Read(1).template Map([](auto x) { return x.template Into<uint8_t>(); }))
 		{
 			masked = *byte & 0b10000000;
-			Assert(!masked);
+			Core::Assert(!masked);
 			uint8_t sizeByte = *byte & 0b01111111;
 			if (sizeByte == 126)
 			{
-				size = FromBigEndian(mSocket.Read(sizeof(uint16_t)).Unwrap().template Into<uint16_t>());
+				size = Core::FromBigEndian(mSocket.Read(sizeof(uint16_t)).Unwrap().template Into<uint16_t>());
 			}
 			else if (sizeByte == 127)
 			{
-				size = FromBigEndian(mSocket.Read(sizeof(uint64_t)).Unwrap().template Into<uint64_t>());
+				size = Core::FromBigEndian(mSocket.Read(sizeof(uint64_t)).Unwrap().template Into<uint64_t>());
 			}
 			else
 			{
@@ -301,7 +301,7 @@ namespace Strawberry::Core::Net::Websocket
 		}
 		else
 		{
-			Unreachable();
+			Core::Unreachable();
 		}
 
 
@@ -311,17 +311,17 @@ namespace Strawberry::Core::Net::Websocket
 			payload = mSocket.Read(size).Unwrap().AsVector();
 		}
 
-		Assert(payload.size() == size);
+		Core::Assert(payload.size() == size);
 		return ClientBase<S>::Fragment(final, Message(opcode, payload));
 	}
 
 
-	template <IO::ReadWrite S>
+	template <Core::IO::ReadWrite S>
 	void ClientBase<S>::Disconnect(int code)
 	{
 		if (mError == Error::Closed) return;
 
-		auto endianCode = ToBigEndian<uint16_t>(code);
+		auto endianCode = Core::ToBigEndian<uint16_t>(code);
 		Websocket::Message::Payload payload;
 		payload.push_back(reinterpret_cast<uint8_t*>(&endianCode)[0]);
 		payload.push_back(reinterpret_cast<uint8_t*>(&endianCode)[1]);
@@ -338,4 +338,4 @@ namespace Strawberry::Core::Net::Websocket
 
 		mError = Error::Closed;
 	}
-} // namespace Strawberry::Core::Net::Websocket
+} // namespace Strawberry::Net::Websocket

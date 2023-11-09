@@ -1,7 +1,7 @@
 #pragma once
 
 
-namespace Strawberry::Core::Net
+namespace Strawberry::Net
 {
 	enum class Error
 	{

@@ -22,16 +22,16 @@
 #endif // _WIN32
 
 
-namespace Strawberry::Core::Net::Socket
+namespace Strawberry::Net::Socket
 {
-	Result<UDPClient, Error> UDPClient::Create()
+	Core::Result<UDPClient, Error> UDPClient::Create()
 	{
 		auto handle = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
 		if (handle == -1) { return Error::SocketCreation; }
 
 		int  ipv6Only     = 0;
 		auto optSetResult = setsockopt(handle, IPPROTO_IPV6, IPV6_V6ONLY, reinterpret_cast<const char*>(&ipv6Only), sizeof(ipv6Only));
-		Assert(optSetResult == 0);
+		Core::Assert(optSetResult == 0);
 
 		UDPClient client;
 		client.mSocket = handle;
@@ -39,7 +39,7 @@ namespace Strawberry::Core::Net::Socket
 	}
 
 
-	Result<UDPClient, Error> UDPClient::CreateIPv4()
+	Core::Result<UDPClient, Error> UDPClient::CreateIPv4()
 	{
 		auto handle = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 		if (handle == -1) { return Error::SocketCreation; }
@@ -50,7 +50,7 @@ namespace Strawberry::Core::Net::Socket
 	}
 
 
-	Result<UDPClient, Error> UDPClient::CreateIPv6()
+	Core::Result<UDPClient, Error> UDPClient::CreateIPv6()
 	{
 		auto handle = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
 		if (handle == -1) { return Error::SocketCreation; }
@@ -92,7 +92,7 @@ namespace Strawberry::Core::Net::Socket
 #elif defined(_WIN32)
 			closesocket(mSocket);
 #else
-			Unreachable();
+			Core::Unreachable();
 #endif
 		}
 	}
@@ -106,7 +106,7 @@ namespace Strawberry::Core::Net::Socket
         };
 
 		int pollResult = poll(fds, 1, 0);
-		Assert(pollResult >= 0);
+		Core::Assert(pollResult >= 0);
 		return static_cast<bool>(fds[0].revents & POLLIN);
 #elif defined(__WIN32)
 		WSAPOLLFD fds[] =
@@ -114,14 +114,14 @@ namespace Strawberry::Core::Net::Socket
 						{mSocket, POLLIN, 0}
 				};
 		int pollResult = WSAPoll(fds, 1, 0);
-		Assert(pollResult >= 0);
+		Core::Assert(pollResult >= 0);
 		return static_cast<bool>(fds[0].revents & POLLIN);
 #else
-		Unreachable();
+		Core::Unreachable();
 #endif
 	}
 
-	Result<std::tuple<Optional<Endpoint>, IO::DynamicByteBuffer>, IO::Error> UDPClient::Read()
+	Core::Result<std::tuple<Core::Optional<Endpoint>, Core::IO::DynamicByteBuffer>, Core::IO::Error> UDPClient::Read()
 	{
 		sockaddr_storage peer{};
 		socklen_t        peerLen = 0;
@@ -129,25 +129,25 @@ namespace Strawberry::Core::Net::Socket
 
 		if (bytesRead >= 0)
 		{
-			Optional<Endpoint> endpoint;
+			Core::Optional<Endpoint> endpoint;
 			if (peer.ss_family == AF_INET)
 			{
 				auto* sockaddr = reinterpret_cast<sockaddr_in*>(&peer);
-				endpoint.Emplace(IPv4Address(IO::ByteBuffer<4>(sockaddr->sin_addr)), sockaddr->sin_port);
+				endpoint.Emplace(IPv4Address(Core::IO::ByteBuffer<4>(sockaddr->sin_addr)), sockaddr->sin_port);
 			}
 			else if (peer.ss_family == AF_INET6)
 			{
 				auto* sockaddr = reinterpret_cast<sockaddr_in6*>(&peer);
-				endpoint.Emplace(IPv6Address(IO::ByteBuffer<16>(sockaddr->sin6_addr)), sockaddr->sin6_port);
+				endpoint.Emplace(IPv6Address(Core::IO::ByteBuffer<16>(sockaddr->sin6_addr)), sockaddr->sin6_port);
 			}
 
-			return std::make_tuple(endpoint, IO::DynamicByteBuffer(mBuffer.Data(), bytesRead));
+			return std::make_tuple(endpoint, Core::IO::DynamicByteBuffer(mBuffer.Data(), bytesRead));
 		}
-		else { Unreachable(); }
+		else { Core::Unreachable(); }
 	}
 
 
-	Result<size_t, IO::Error> UDPClient::Write(const Endpoint& endpoint, const IO::DynamicByteBuffer& bytes) const
+	Core::Result<size_t, Core::IO::Error> UDPClient::Write(const Endpoint& endpoint, const Core::IO::DynamicByteBuffer& bytes) const
 	{
 		addrinfo  hints{.ai_flags = AI_ADDRCONFIG, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
 		addrinfo* peer   = nullptr;
@@ -158,6 +158,6 @@ namespace Strawberry::Core::Net::Socket
 		auto bytesSent = sendto(mSocket, reinterpret_cast<const char*>(bytes.Data()), bytes.Size(), 0, peer->ai_addr, peer->ai_addrlen);
 		freeaddrinfo(peer);
 		if (bytesSent >= 0) { return bytesSent; }
-		else { Unreachable(); }
+		else { Core::Unreachable(); }
 	}
-} // namespace Strawberry::Core::Net::Socket
+} // namespace Strawberry::Net::Socket

@@ -18,14 +18,14 @@
 #endif
 
 
-namespace Strawberry::Core::Net::Socket
+namespace Strawberry::Net::Socket
 {
 	class UDPClient
 	{
 	public:
-		static Result<UDPClient, Error> Create();
-		static Result<UDPClient, Error> CreateIPv4();
-		static Result<UDPClient, Error> CreateIPv6();
+		static Core::Result<UDPClient, Error> Create();
+		static Core::Result<UDPClient, Error> CreateIPv4();
+		static Core::Result<UDPClient, Error> CreateIPv6();
 
 
 	public:
@@ -37,9 +37,11 @@ namespace Strawberry::Core::Net::Socket
 		~UDPClient();
 
 
-		[[nodiscard]] bool                                                     Poll() const;
-		Result<std::tuple<Optional<Endpoint>, IO::DynamicByteBuffer>, IO::Error> Read();
-		Result<size_t, IO::Error>                                              Write(const Endpoint& endpoint, const IO::DynamicByteBuffer& bytes) const;
+		[[nodiscard]] bool  Poll() const;
+		Core::Result<std::tuple<Core::Optional<Endpoint>, Core::IO::DynamicByteBuffer>, Core::IO::Error>
+		Read();
+		Core::Result<size_t, Core::IO::Error> Write(const Endpoint& endpoint,
+											  const Core::IO::DynamicByteBuffer& bytes) const;
 
 
 	private:
@@ -50,6 +52,6 @@ namespace Strawberry::Core::Net::Socket
 #endif
 
 		static constexpr size_t     BUFFER_SIZE = 25536;
-		IO::ByteBuffer<BUFFER_SIZE> mBuffer;
+		Core::IO::ByteBuffer<BUFFER_SIZE> mBuffer;
 	};
-} // namespace Strawberry::Core::Net::Socket
+} // namespace Strawberry::Net::Socket

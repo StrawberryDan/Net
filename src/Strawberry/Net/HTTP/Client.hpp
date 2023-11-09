@@ -8,7 +8,7 @@
 #include "Strawberry/Core/Util/Stubs.hpp"
 
 
-namespace Strawberry::Core::Net::HTTP
+namespace Strawberry::Net::HTTP
 {
 	template <typename S>
 	class ClientBase
@@ -26,14 +26,14 @@ namespace Strawberry::Core::Net::HTTP
 
 	protected:
 		/// Connects to the given endpoint over HTTP
-		ClientBase(const Core::Net::Endpoint& endpoint);
+		ClientBase(const Endpoint& endpoint);
 
 
 	private:
 		/// Reads a line of input until a newline character from the socket.
 		std::string           ReadLine();
 		/// Reads a chunked HTTP payload from the socket.
-		IO::DynamicByteBuffer ReadChunkedPayload();
+		Core::IO::DynamicByteBuffer ReadChunkedPayload();
 
 
 	private:
@@ -53,7 +53,7 @@ namespace Strawberry::Core::Net::HTTP
 	public:
 		explicit HTTPSClient(const Net::Endpoint& endpoint);
 	};
-} // namespace Strawberry::Core::Net::HTTP
+} // namespace Strawberry::Net::HTTP
 
 
 #include "Client.inl"

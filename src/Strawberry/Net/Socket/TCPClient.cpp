@@ -21,9 +21,9 @@
 #endif // _WIN32
 
 
-namespace Strawberry::Core::Net::Socket
+namespace Strawberry::Net::Socket
 {
-	Result<TCPClient, Error> TCPClient::Connect(const Endpoint& endpoint)
+	Core::Result<TCPClient, Error> TCPClient::Connect(const Endpoint& endpoint)
 	{
 		TCPClient client;
 
@@ -32,7 +32,7 @@ namespace Strawberry::Core::Net::Socket
 		else if (endpoint.GetAddress()->IsIPv6())
 			hints.ai_family = AF_INET6;
 		else
-			Unreachable();
+			Core::Unreachable();
 		addrinfo* peerAddress = nullptr;
 		auto      addrResult  = getaddrinfo(endpoint.GetAddress()->AsString().c_str(), std::to_string(endpoint.GetPort()).c_str(), &hints, &peerAddress);
 		if (addrResult != 0)
@@ -92,7 +92,7 @@ namespace Strawberry::Core::Net::Socket
 #elif defined(__WIN32)
 			closesocket(mSocket);
 #else
-			Unreachable();
+			Core::Unreachable();
 #endif
 		}
 	}
@@ -106,7 +106,7 @@ namespace Strawberry::Core::Net::Socket
         };
 
 		int pollResult = poll(fds, 1, 0);
-		Assert(pollResult >= 0);
+		Core::Assert(pollResult >= 0);
 		return static_cast<bool>(fds[0].revents & POLLIN);
 #elif defined(__WIN32)
 		WSAPOLLFD fds[] =
@@ -114,32 +114,32 @@ namespace Strawberry::Core::Net::Socket
 				{mSocket, POLLIN, 0}
 		};
 		int pollResult = WSAPoll(fds, 1, 0);
-		Assert(pollResult >= 0);
+		Core::Assert(pollResult >= 0);
 		return static_cast<bool>(fds[0].revents & POLLIN);
 #else
-		Unreachable();
+		Core::Unreachable();
 #endif
 	}
 
 
-	Result<IO::DynamicByteBuffer, IO::Error> TCPClient::Read(size_t length)
+	Core::Result<Core::IO::DynamicByteBuffer, Core::IO::Error> TCPClient::Read(size_t length)
 	{
-		auto   buffer    = IO::DynamicByteBuffer::Zeroes(length);
+		auto   buffer    = Core::IO::DynamicByteBuffer::Zeroes(length);
 		size_t bytesRead = 0;
 
 		while (bytesRead < length)
 		{
 			auto thisRead = recv(mSocket, reinterpret_cast<char*>(buffer.Data()) + bytesRead, length - bytesRead, 0);
 			if (thisRead > 0) { bytesRead += thisRead; }
-			else { Unreachable(); }
+			else { Core::Unreachable(); }
 		}
 
-		Assert(bytesRead == length);
+		Core::Assert(bytesRead == length);
 		return buffer;
 	}
 
 
-	Result<size_t, IO::Error> TCPClient::Write(const IO::DynamicByteBuffer& bytes)
+	Core::Result<size_t, Core::IO::Error> TCPClient::Write(const Core::IO::DynamicByteBuffer& bytes)
 	{
 		size_t bytesSent = 0;
 
@@ -147,10 +147,10 @@ namespace Strawberry::Core::Net::Socket
 		{
 			auto thisSend = send(mSocket, reinterpret_cast<const char*>(bytes.Data()) + bytesSent, bytes.Size() - bytesSent, 0);
 			if (thisSend > 0) { bytesSent += thisSend; }
-			else { Unreachable(); }
+			else { Core::Unreachable(); }
 		}
 
-		Assert(bytesSent == bytes.Size());
+		Core::Assert(bytesSent == bytes.Size());
 		return bytesSent;
 	}
-} // namespace Strawberry::Core::Net::Socket
+} // namespace Strawberry::Net::Socket

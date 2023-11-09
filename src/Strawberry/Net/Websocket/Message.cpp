@@ -7,7 +7,7 @@
 #include "Strawberry/Core/IO/Endian.hpp"
 
 
-namespace Strawberry::Core::Net::Websocket
+namespace Strawberry::Net::Websocket
 {
 	Message::Message(Message::Opcode opcode, Payload payload)
 		: mOpcode(opcode)
@@ -38,7 +38,7 @@ namespace Strawberry::Core::Net::Websocket
 	}
 
 
-	Result<nlohmann::json, std::string> Message::AsJSON() const
+	Core::Result<nlohmann::json, std::string> Message::AsJSON() const
 	{
 		nlohmann::json json;
 		switch (mOpcode)
@@ -53,11 +53,11 @@ namespace Strawberry::Core::Net::Websocket
 				{
 					return std::string("Parse Error");
 				}
-				return Result<nlohmann::json, std::string>::Ok(std::forward<nlohmann::json>(json));
+				return Core::Result<nlohmann::json, std::string>::Ok(std::forward<nlohmann::json>(json));
 			}
 
 			default:
-				DebugBreak();
+				Core::DebugBreak();
 				return std::string("Invalid Message Type");
 		}
 	}
@@ -66,7 +66,7 @@ namespace Strawberry::Core::Net::Websocket
 	uint16_t Message::GetCloseStatusCode() const
 	{
 		uint16_t s = static_cast<uint16_t>(mPayload[0]) << 0 | static_cast<uint16_t>(mPayload[1]) << 8;
-		s          = FromBigEndian(s);
+		s          = Core::FromBigEndian(s);
 		return s;
 	}
 
@@ -75,4 +75,4 @@ namespace Strawberry::Core::Net::Websocket
 	{
 		mPayload.insert(mPayload.end(), other.mPayload.begin(), other.mPayload.end());
 	}
-} // namespace Strawberry::Core::Net::Websocket
+} // namespace Strawberry::Net::Websocket

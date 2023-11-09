@@ -21,7 +21,7 @@
 #include <thread>
 
 
-namespace Strawberry::Core::Net::Websocket
+namespace Strawberry::Net::Websocket
 {
 	enum class Error
 	{
@@ -32,7 +32,7 @@ namespace Strawberry::Core::Net::Websocket
 	};
 
 
-	template<IO::ReadWrite S>
+	template<Core::IO::ReadWrite S>
 	class ClientBase
 	{
 	public:
@@ -67,11 +67,11 @@ namespace Strawberry::Core::Net::Websocket
 		//======================================================================================================================
 		//  Sending/Receiving Methods
 		//----------------------------------------------------------------------------------------------------------------------
-		Result<NullType, Error> SendMessage(const Message& message);
+		Core::Result<Core::NullType, Error> SendMessage(const Message& message);
 
-		Result<Message, Error> ReadMessage();
+		Core::Result<Message, Error> ReadMessage();
 
-		Result<Message, Error> WaitMessage();
+		Core::Result<Message, Error> WaitMessage();
 
 
 	protected:
@@ -83,16 +83,16 @@ namespace Strawberry::Core::Net::Websocket
 		//  Implementation IO
 		//----------------------------------------------------------------------------------------------------------------------
 		// Receives a single Websocket Frame. This will consolidate sequences of broken up fragments.
-		[[nodiscard]] Result<Message, Error> ReceiveFrame();
+		[[nodiscard]] Core::Result<Message, Error> ReceiveFrame();
 		// Receives a single Websocket Fragment. This may return only parts of a whole websocket frame.
-		[[nodiscard]] Result<Fragment, Error> ReceiveFragment();
+		[[nodiscard]] Core::Result<Fragment, Error> ReceiveFragment();
 		// Sends
-		[[nodiscard]] Result<size_t, Error> TransmitFrame(const Message& frame);
+		[[nodiscard]] Core::Result<size_t, Error> TransmitFrame(const Message& frame);
 
 
 		[[nodiscard]] static std::string GenerateNonce();
 		[[nodiscard]] static uint8_t GetOpcodeMask(Message::Opcode opcode);
-		[[nodiscard]] static Optional<Message::Opcode> GetOpcodeFromByte(uint8_t byte);
+		[[nodiscard]] static Core::Optional<Message::Opcode> GetOpcodeFromByte(uint8_t byte);
 		[[nodiscard]] static uint32_t GenerateMaskingKey();
 
 		void Disconnect(int code = 1000);
@@ -104,7 +104,7 @@ namespace Strawberry::Core::Net::Websocket
 
 	protected:
 		S mSocket;
-		Optional<Error> mError;
+		Core::Optional<Error> mError;
 	};
 
 
@@ -112,8 +112,8 @@ namespace Strawberry::Core::Net::Websocket
 		: public ClientBase<Socket::TCPClient>
 	{
 	public:
-		static Result<WSClient, Error>
-		Connect(const Core::Net::Endpoint& endpoint, const std::string& resource);
+		static Core::Result<WSClient, Error>
+		Connect(const Endpoint& endpoint, const std::string& resource);
 	};
 
 
@@ -121,9 +121,9 @@ namespace Strawberry::Core::Net::Websocket
 		: public ClientBase<Socket::TLSClient>
 	{
 	public:
-		static Result<WSSClient, Error>
-		Connect(const Core::Net::Endpoint& endpoint, const std::string& resource);
+		static Core::Result<WSSClient, Error>
+		Connect(const Endpoint& endpoint, const std::string& resource);
 	};
-} // namespace Strawberry::Core::Net::Websocket
+} // namespace Strawberry::Net::Websocket
 
 #include "Client.inl"

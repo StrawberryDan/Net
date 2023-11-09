@@ -7,7 +7,7 @@
 #include <string>
 
 
-namespace Strawberry::Core::Net::HTTP
+namespace Strawberry::Net::HTTP
 {
 	class Request
 	{
@@ -30,10 +30,10 @@ namespace Strawberry::Core::Net::HTTP
 		inline Header& GetHeader() { return mHeader; }
 
 
-		[[nodiscard]] inline const IO::DynamicByteBuffer& GetPayload() const { return mPayload; }
+		[[nodiscard]] inline const Core::IO::DynamicByteBuffer& GetPayload() const { return mPayload; }
 
 
-		inline void SetPayload(const IO::DynamicByteBuffer& payload) { mPayload = payload; }
+		inline void SetPayload(const Core::IO::DynamicByteBuffer& payload) { mPayload = payload; }
 
 
 	private:
@@ -41,6 +41,6 @@ namespace Strawberry::Core::Net::HTTP
 		std::string           mURI;
 		Version               mVersion;
 		Header                mHeader;
-		IO::DynamicByteBuffer mPayload;
+		Core::IO::DynamicByteBuffer mPayload;
 	};
-} // namespace Strawberry::Core::Net::HTTP
+} // namespace Strawberry::Net::HTTP

@@ -7,7 +7,7 @@
 #include <vector>
 
 
-namespace Strawberry::Core::Net::HTTP
+namespace Strawberry::Net::HTTP
 {
 	class Header
 	{
@@ -44,4 +44,4 @@ namespace Strawberry::Core::Net::HTTP
 	private:
 		Entries mEntries;
 	};
-} // namespace Strawberry::Core::Net::HTTP
+} // namespace Strawberry::Net::HTTP

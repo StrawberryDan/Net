@@ -1,7 +1,7 @@
 #pragma once
 
 
-namespace Strawberry::Core::Net::Socket
+namespace Strawberry::Net::Socket
 {
 	class API
 	{
@@ -14,4 +14,4 @@ namespace Strawberry::Core::Net::Socket
     private:
         static bool sIsInitialised;
 	};
-} // namespace Strawberry::Core::Net::Socket
+} // namespace Strawberry::Net::Socket

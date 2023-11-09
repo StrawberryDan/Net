@@ -9,12 +9,12 @@
 #include <string>
 
 
-namespace Strawberry::Core::Net::Socket
+namespace Strawberry::Net::Socket
 {
 	class TLSClient
 	{
 	public:
-		static Result<TLSClient, Error> Connect(const Endpoint& endpoint);
+		static Core::Result<TLSClient, Error> Connect(const Endpoint& endpoint);
 
 
 	public:
@@ -27,12 +27,12 @@ namespace Strawberry::Core::Net::Socket
 
 
 		[[nodiscard]] bool                       Poll() const;
-		Result<IO::DynamicByteBuffer, IO::Error> Read(size_t length);
-		Result<size_t, IO::Error>                Write(const IO::DynamicByteBuffer& bytes);
+		Core::Result<Core::IO::DynamicByteBuffer, Core::IO::Error> Read(size_t length);
+		Core::Result<size_t, Core::IO::Error>                Write(const Core::IO::DynamicByteBuffer& bytes);
 
 
 	private:
 		TCPClient mTCP;
 		SSL*      mSSL;
 	};
-} // namespace Strawberry::Core::Net::Socket
+} // namespace Strawberry::Net::Socket

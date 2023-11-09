@@ -10,59 +10,59 @@
 #include "Strawberry/Core/IO/DynamicByteBuffer.hpp"
 #include "Strawberry/Core/Types/Optional.hpp"
 
-namespace Strawberry::Core::Net
+namespace Strawberry::Net
 {
 	class IPv4Address
 	{
 	public:
 		// Static constructors
-		static Optional<IPv4Address> Parse(const std::string& data);
+		static Core::Optional<IPv4Address> Parse(const std::string& data);
 
 
 	public:
 		// Constructors
-		IPv4Address(const IO::ByteBuffer<4> bytes)
+		IPv4Address(const Core::IO::ByteBuffer<4> bytes)
 			: mData(bytes)
 		{}
 
 
-		IPv4Address(const IO::DynamicByteBuffer& bytes)
+		IPv4Address(const Core::IO::DynamicByteBuffer& bytes)
 			: mData(bytes.AsStatic<4>())
 		{}
 
 
 		// Casting
-		[[nodiscard]] IO::ByteBuffer<4> AsBytes() const;
+		[[nodiscard]] Core::IO::ByteBuffer<4> AsBytes() const;
 		[[nodiscard]] std::string       AsString() const;
 
 	private:
-		IO::ByteBuffer<4> mData;
+		Core::IO::ByteBuffer<4> mData;
 	};
 
 
 	class IPv6Address
 	{
 	public:
-		static Optional<IPv6Address> Parse(const std::string& string);
+		static Core::Optional<IPv6Address> Parse(const std::string& string);
 
 
 	public:
-		IPv6Address(const IO::ByteBuffer<16>& bytes)
+		IPv6Address(const Core::IO::ByteBuffer<16>& bytes)
 			: mData(bytes)
 		{}
 
 
-		IPv6Address(const IO::DynamicByteBuffer& bytes)
+		IPv6Address(const Core::IO::DynamicByteBuffer& bytes)
 			: mData(bytes.AsStatic<16>())
 		{}
 
 
 		// Casting
-		[[nodiscard]] const IO::ByteBuffer<16>& AsBytes() const;
+		[[nodiscard]] const Core::IO::ByteBuffer<16>& AsBytes() const;
 		[[nodiscard]] std::string               AsString() const;
 
 	private:
-		IO::ByteBuffer<16> mData;
+		Core::IO::ByteBuffer<16> mData;
 	};
 
 
@@ -81,13 +81,13 @@ namespace Strawberry::Core::Net
 
 
 		// Casting
-		[[nodiscard]] Optional<IPv4Address> AsIPv4() const;
-		[[nodiscard]] Optional<IPv6Address> AsIPv6() const;
-		[[nodiscard]] IO::DynamicByteBuffer AsBytes() const;
+		[[nodiscard]] Core::Optional<IPv4Address> AsIPv4() const;
+		[[nodiscard]] Core::Optional<IPv6Address> AsIPv6() const;
+		[[nodiscard]] Core::IO::DynamicByteBuffer AsBytes() const;
 		[[nodiscard]] std::string           AsString() const;
 
 
 	private:
 		std::variant<IPv4Address, IPv6Address> mPayload;
 	};
-} // namespace Strawberry::Core::Net
+} // namespace Strawberry::Net

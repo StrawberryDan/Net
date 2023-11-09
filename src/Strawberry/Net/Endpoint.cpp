@@ -13,29 +13,29 @@
 #endif
 
 
-namespace Strawberry::Core::Net
+namespace Strawberry::Net
 {
-	Result<Endpoint, Error> Endpoint::Resolve(const std::string& hostname, uint16_t port)
+	Core::Result<Endpoint, Error> Endpoint::Resolve(const std::string& hostname, uint16_t port)
 	{
 		addrinfo  hints{.ai_flags = AI_ALL | AI_ADDRCONFIG};
 		addrinfo* peer      = nullptr;
 		auto      dnsResult = getaddrinfo(hostname.c_str(), std::to_string(port).c_str(), &hints, &peer);
 		if (dnsResult != 0) { return Error::DNSResolution; }
 
-		Optional<Endpoint> result;
+		Core::Optional<Endpoint> result;
 		addrinfo*        cursor = peer;
 		while (cursor != nullptr)
 		{
 			if (cursor->ai_family == AF_INET)
 			{
 				auto        ipData = reinterpret_cast<sockaddr_in*>(cursor->ai_addr);
-				IPv4Address addr(IO::ByteBuffer<4>(ipData->sin_addr.s_addr));
+				IPv4Address addr(Core::IO::ByteBuffer<4>(ipData->sin_addr.s_addr));
 				result = Endpoint(addr, port);
 			}
 			else if (cursor->ai_family == AF_INET6)
 			{
 				auto        ipData = reinterpret_cast<sockaddr_in6*>(cursor->ai_addr);
-				IPv6Address addr(IO::ByteBuffer<16>(&ipData->sin6_addr));
+				IPv6Address addr(Core::IO::ByteBuffer<16>(&ipData->sin6_addr));
 				result = Endpoint(addr, port);
 			}
 
@@ -51,7 +51,7 @@ namespace Strawberry::Core::Net
 	}
 
 
-	Result<Endpoint, Error> Endpoint::Resolve(const std::string& endpoint)
+	Core::Result<Endpoint, Error> Endpoint::Resolve(const std::string& endpoint)
 	{
 		auto colonPos = endpoint.find(':');
 		if (colonPos == std::string::npos) return Error::ParsingEndpoint;
@@ -72,7 +72,7 @@ namespace Strawberry::Core::Net
 	}
 
 
-	Result<Endpoint, Error> Endpoint::Parse(const std::string& endpoint)
+	Core::Result<Endpoint, Error> Endpoint::Parse(const std::string& endpoint)
 	{
 		auto colonPos = endpoint.find(':');
 		if (colonPos == std::string::npos) return Error::ParsingEndpoint;
@@ -104,4 +104,4 @@ namespace Strawberry::Core::Net
 		  , mAddress(Resolve(hostname).IntoOptional().AndThen([](auto x) { return x.GetAddress(); }))
 		, mPort(port)
 	{}
-} // namespace Strawberry::Core::Net
+} // namespace Strawberry::Net

@@ -10,7 +10,7 @@
 #endif
 
 
-namespace Strawberry::Core::Net::Socket
+namespace Strawberry::Net::Socket
 {
 	bool API::sIsInitialised = false;
 
@@ -19,11 +19,10 @@ namespace Strawberry::Core::Net::Socket
 	{
 		if (!IsInitialised())
 		{
-			Logging::Info("Initialising Socket API");
 #if defined(_WIN32)
 			WSAData wsaData;
 			auto err = WSAStartup(MAKEWORD(2, 2), &wsaData);
-			Assert(err == 0);
+			Core::Assert(err == 0);
 #endif
 			sIsInitialised = true;
 		}
@@ -34,7 +33,6 @@ namespace Strawberry::Core::Net::Socket
 	{
 		if (IsInitialised())
 		{
-			Logging::Info("Terminating Socket API");
 #if defined(_WIN32)
 			WSACleanup();
 #endif
@@ -47,4 +45,4 @@ namespace Strawberry::Core::Net::Socket
 	{
 		return sIsInitialised;
 	}
-} // namespace Strawberry::Core::Net::Socket
+} // namespace Strawberry::Net::Socket

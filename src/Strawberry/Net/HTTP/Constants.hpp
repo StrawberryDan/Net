@@ -5,7 +5,7 @@
 #include <string>
 
 
-namespace Strawberry::Core::Net::HTTP
+namespace Strawberry::Net::HTTP
 {
 	class Verb
 	{
@@ -27,7 +27,7 @@ namespace Strawberry::Core::Net::HTTP
 
 		operator _Enum() const { return mValue; }
 
-		static Optional<Verb>     Parse(const std::string& string);
+		static Core::Optional<Verb>     Parse(const std::string& string);
 		[[nodiscard]] std::string ToString() const;
 
 	private:
@@ -54,10 +54,10 @@ namespace Strawberry::Core::Net::HTTP
 
 		inline operator _Enum() const { return mValue; }
 
-		static Optional<Version>  Parse(const std::string& string);
+		static Core::Optional<Version>  Parse(const std::string& string);
 		[[nodiscard]] std::string ToString() const;
 
 	private:
 		_Enum mValue;
 	};
-} // namespace Strawberry::Core::Net::HTTP
+} // namespace Strawberry::Net::HTTP

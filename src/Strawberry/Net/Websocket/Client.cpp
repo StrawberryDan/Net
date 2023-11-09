@@ -1,9 +1,9 @@
 #include "Strawberry/Net/Websocket/Client.hpp"
 
 
-namespace Strawberry::Core::Net::Websocket
+namespace Strawberry::Net::Websocket
 {
-	Result<WSClient, Error> WSClient::Connect(const Core::Net::Endpoint& endpoint, const std::string& resource)
+	Core::Result<WSClient, Error> WSClient::Connect(const Endpoint& endpoint, const std::string& resource)
 	{
 		HTTP::HTTPClient handshaker(endpoint);
 		HTTP::Request    upgradeRequest(HTTP::Verb::GET, resource);
@@ -24,7 +24,7 @@ namespace Strawberry::Core::Net::Websocket
 	}
 
 
-	Result<WSSClient, Error> WSSClient::Connect(const Core::Net::Endpoint& endpoint, const std::string& resource)
+	Core::Result<WSSClient, Error> WSSClient::Connect(const Endpoint& endpoint, const std::string& resource)
 	{
 		HTTP::HTTPSClient handshaker(endpoint);
 		HTTP::Request     upgradeRequest(HTTP::Verb::GET, resource);
@@ -42,4 +42,4 @@ namespace Strawberry::Core::Net::Websocket
 		client.mSocket = std::move(handshaker).IntoSocket();
 		return std::move(client);
 	}
-} // namespace Strawberry::Core::Net::Websocket
+} // namespace Strawberry::Net::Websocket

@@ -54,9 +54,9 @@ private:
 std::unique_ptr<TLSContext> TLSContext::mInstance = nullptr;
 
 
-namespace Strawberry::Core::Net::Socket
+namespace Strawberry::Net::Socket
 {
-	Result<TLSClient, Error> TLSClient::Connect(const Endpoint& endpoint)
+	Core::Result<TLSClient, Error> TLSClient::Connect(const Endpoint& endpoint)
 	{
 		auto tcp = TCPClient::Connect(endpoint);
 		if (!tcp) { return tcp.Err(); }
@@ -67,7 +67,7 @@ namespace Strawberry::Core::Net::Socket
 		if (endpoint.GetHostname())
 		{
 			auto hostnameResult = SSL_set_tlsext_host_name(ssl, endpoint.GetHostname()->c_str());
-			Assert(hostnameResult);
+			Core::Assert(hostnameResult);
 		}
 
 		SSL_set_fd(ssl, tcp->mSocket);
@@ -128,9 +128,9 @@ namespace Strawberry::Core::Net::Socket
 	}
 
 
-	Result<IO::DynamicByteBuffer, IO::Error> TLSClient::Read(size_t length)
+	Core::Result<Core::IO::DynamicByteBuffer, Core::IO::Error> TLSClient::Read(size_t length)
 	{
-		auto   buffer    = IO::DynamicByteBuffer::Zeroes(length);
+		auto   buffer    = Core::IO::DynamicByteBuffer::Zeroes(length);
 		size_t bytesRead = 0;
 
 		while (bytesRead < length)
@@ -143,29 +143,29 @@ namespace Strawberry::Core::Net::Socket
 				switch (error)
 				{
 					case SSL_ERROR_ZERO_RETURN:
-						return IO::Error::Closed;
+						return Core::IO::Error::Closed;
 					case SSL_ERROR_SYSCALL:
 						Core::Logging::Error("SSL read error. Error: {}", strerror(errno));
-						return IO::Error::Unknown;
+						return Core::IO::Error::Unknown;
 					default:
 						Core::Logging::Error("Unknown SSL_read error code: {}", error);
-						return IO::Error::Unknown;
+						return Core::IO::Error::Unknown;
 				}
 			}
 		}
 
-		Assert(bytesRead == length);
+		Core::Assert(bytesRead == length);
 		return buffer;
 	}
 
 
-	Result<size_t, IO::Error> TLSClient::Write(const IO::DynamicByteBuffer& bytes)
+	Core::Result<size_t, Core::IO::Error> TLSClient::Write(const Core::IO::DynamicByteBuffer& bytes)
 	{
 		auto bytesSent = SSL_write(mSSL, bytes.Data(), static_cast<int>(bytes.Size()));
 
 		if (bytesSent >= 0)
 		{
-			Assert(bytesSent == bytes.Size());
+			Core::Assert(bytesSent == bytes.Size());
 			return bytesSent;
 		}
 		else
@@ -173,8 +173,8 @@ namespace Strawberry::Core::Net::Socket
 			switch (SSL_get_error(mSSL, bytesSent))
 			{
 				default:
-					return IO::Error::Unknown;
+					return Core::IO::Error::Unknown;
 			}
 		}
 	}
-} // namespace Strawberry::Core::Net::Socket
+} // namespace Strawberry::Net::Socket

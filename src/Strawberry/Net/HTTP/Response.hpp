@@ -6,7 +6,7 @@
 #include "Strawberry/Core/IO/DynamicByteBuffer.hpp"
 
 
-namespace Strawberry::Core::Net::HTTP
+namespace Strawberry::Net::HTTP
 {
 	class Response
 	{
@@ -29,10 +29,10 @@ namespace Strawberry::Core::Net::HTTP
 		inline Header& GetHeader() { return mHeader; }
 
 
-		[[nodiscard]] inline const IO::DynamicByteBuffer& GetPayload() const { return mPayload; }
+		[[nodiscard]] inline const Core::IO::DynamicByteBuffer& GetPayload() const { return mPayload; }
 
 
-		inline void SetPayload(const IO::DynamicByteBuffer& payload) { mPayload = payload; }
+		inline void SetPayload(const Core::IO::DynamicByteBuffer& payload) { mPayload = payload; }
 
 
 	private:
@@ -40,6 +40,6 @@ namespace Strawberry::Core::Net::HTTP
 		unsigned int          mStatus;
 		std::string           mStatusText;
 		Header                mHeader;
-		IO::DynamicByteBuffer mPayload;
+		Core::IO::DynamicByteBuffer mPayload;
 	};
-} // namespace Strawberry::Core::Net::HTTP
+} // namespace Strawberry::Net::HTTP
