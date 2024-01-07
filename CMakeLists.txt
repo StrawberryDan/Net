@@ -1,5 +1,13 @@
 cmake_minimum_required(VERSION 3.25)
 project(StrawberryNet)
+include(FetchContent)
+
+
+FetchContent_Declare(StrawberryConfig
+		GIT_REPOSITORY "https://github.com/StrawberryDan/Config.git"
+		GIT_TAG "main")
+FetchContent_MakeAvailable(StrawberryConfig)
+include(StrawberryConfig)
 
 
 if (NOT TARGET StrawberryNet)
