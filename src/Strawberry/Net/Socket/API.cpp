@@ -5,7 +5,7 @@
 
 
 #include "Strawberry/Core/Assert.hpp"
-#if defined(_WIN32)
+#if STRAWBERRY_TARGET_WINDOWS
 #include <winsock2.h>
 #endif
 
@@ -19,7 +19,7 @@ namespace Strawberry::Net::Socket
 	{
 		if (!IsInitialised())
 		{
-#if defined(_WIN32)
+#if STRAWBERRY_TARGET_WINDOWS
 			WSAData wsaData;
 			auto err = WSAStartup(MAKEWORD(2, 2), &wsaData);
 			Core::Assert(err == 0);
@@ -33,7 +33,7 @@ namespace Strawberry::Net::Socket
 	{
 		if (IsInitialised())
 		{
-#if defined(_WIN32)
+#if STRAWBERRY_TARGET_WINDOWS
 			WSACleanup();
 #endif
 			sIsInitialised = false;

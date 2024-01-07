@@ -1,13 +1,13 @@
 #include "Strawberry/Net/Endpoint.hpp"
 
 
-#if defined(__APPLE__) || defined(__linux__)
+#if STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
 
 
 #include <netdb.h>
 
 
-#elif defined(_WIN32)
+#elif STRAWBERRY_TARGET_WINDOWS
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #endif

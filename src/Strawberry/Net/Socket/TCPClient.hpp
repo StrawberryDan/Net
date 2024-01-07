@@ -11,7 +11,7 @@
 #include "Strawberry/Core/Types/Result.hpp"
 
 
-#if defined(_WIN32)
+#if STRAWBERRY_TARGET_WINDOWS
 #include <winsock2.h>
 #endif
 
@@ -42,9 +42,9 @@ namespace Strawberry::Net::Socket
 
 
 	private:
-#if defined(__APPLE__) || defined(__linux__)
+#if STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
 		int mSocket;
-#elif defined(_WIN32)
+#elif STRAWBERRY_TARGET_WINDOWS
 		SOCKET mSocket;
 #endif
 	};

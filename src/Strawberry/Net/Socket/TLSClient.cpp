@@ -10,7 +10,7 @@
 #include <openssl/tls1.h>
 
 
-#if defined(__APPLE__) || defined(__linux__)
+#if STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
 
 
 #include <unistd.h>
@@ -111,9 +111,9 @@ namespace Strawberry::Net::Socket
 		{
 			SSL_shutdown(mSSL);
 
-#if defined(__APPLE__) || defined(__linux__)
+#if STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
 			close(mTCP.mSocket);
-#elif defined(_WIN32)
+#elif STRAWBERRY_TARGET_WINDOWS
 			closesocket(mTCP.mSocket);
 #endif
 

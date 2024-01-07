@@ -6,10 +6,10 @@
 #include "Strawberry/Core/Util/Strings.hpp"
 
 
-#if _WIN32
+#if STRAWBERRY_TARGET_WINDOWS
 #include <winsock2.h>
 #include <ws2tcpip.h>
-#elif __APPLE__ || __linux__
+#elif STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
 
 
 #include <netdb.h>
@@ -18,7 +18,7 @@
 #include <unistd.h>
 
 
-#endif // _WIN32
+#endif // STRAWBERRY_TARGET_WINDOWS
 
 
 namespace Strawberry::Net::Socket
@@ -87,9 +87,9 @@ namespace Strawberry::Net::Socket
 	{
 		if (mSocket != -1)
 		{
-#if defined(__APPLE__) || defined(__linux__)
+#if STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
 			close(mSocket);
-#elif defined(__WIN32)
+#elif STRAWBERRY_TARGET_WINDOWS
 			closesocket(mSocket);
 #else
 			Core::Unreachable();
@@ -100,7 +100,7 @@ namespace Strawberry::Net::Socket
 
 	bool TCPClient::Poll() const
 	{
-#if defined(__APPLE__) || defined(__linux__)
+#if STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
 		pollfd fds[] = {
 			{mSocket, POLLIN, 0}
         };
@@ -108,7 +108,7 @@ namespace Strawberry::Net::Socket
 		int pollResult = poll(fds, 1, 0);
 		Core::Assert(pollResult >= 0);
 		return static_cast<bool>(fds[0].revents & POLLIN);
-#elif defined(__WIN32)
+#elif STRAWBERRY_TARGET_WINDOWS
 		WSAPOLLFD fds[] =
 		{
 				{mSocket, POLLIN, 0}
