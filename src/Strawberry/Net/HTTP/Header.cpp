@@ -2,7 +2,7 @@
 
 
 #include "Strawberry/Core/Assert.hpp"
-#include "Strawberry/Core/Util/Stubs.hpp"
+#include "Strawberry/Core/Util/Strings.hpp"
 
 
 namespace Strawberry::Net::HTTP

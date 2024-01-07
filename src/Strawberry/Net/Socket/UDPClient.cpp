@@ -3,7 +3,7 @@
 
 #include "Strawberry/Core/Assert.hpp"
 #include "Strawberry/Core/Markers.hpp"
-#include "Strawberry/Core/Util/Stubs.hpp"
+#include "Strawberry/Core/Util/Strings.hpp"
 
 
 #if _WIN32
