@@ -3,7 +3,7 @@
 
 #include "Strawberry/Net/Error.hpp"
 #include "Strawberry/Core/Types/Optional.hpp"
-#include "TCPClient.hpp"
+#include "TCPSocket.hpp"
 #include <memory>
 #include <openssl/ssl.h>
 #include <string>
@@ -11,19 +11,19 @@
 
 namespace Strawberry::Net::Socket
 {
-	class TLSClient
+	class TLSSocket
 	{
 	public:
-		static Core::Result<TLSClient, Error> Connect(const Endpoint& endpoint);
+		static Core::Result<TLSSocket, Error> Connect(const Endpoint& endpoint);
 
 
 	public:
-		TLSClient();
-		TLSClient(const TLSClient& other) = delete;
-		TLSClient(TLSClient&& other) noexcept;
-		TLSClient& operator=(const TLSClient& other) = delete;
-		TLSClient& operator=(TLSClient&& other) noexcept;
-		~TLSClient();
+		TLSSocket();
+		TLSSocket(const TLSSocket& other) = delete;
+		TLSSocket(TLSSocket&& other) noexcept;
+		TLSSocket& operator=(const TLSSocket& other) = delete;
+		TLSSocket& operator=(TLSSocket&& other) noexcept;
+		~TLSSocket();
 
 
 		[[nodiscard]] bool                       Poll() const;
@@ -32,7 +32,7 @@ namespace Strawberry::Net::Socket
 
 
 	private:
-		TCPClient mTCP;
+		TCPSocket mTCP;
 		SSL*      mSSL;
 	};
 } // namespace Strawberry::Net::Socket

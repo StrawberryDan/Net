@@ -1,4 +1,4 @@
-#include "Strawberry/Net/Socket/TCPClient.hpp"
+#include "Strawberry/Net/Socket/TCPSocket.hpp"
 
 
 #include "Strawberry/Core/Assert.hpp"
@@ -23,9 +23,9 @@
 
 namespace Strawberry::Net::Socket
 {
-	Core::Result<TCPClient, Error> TCPClient::Connect(const Endpoint& endpoint)
+	Core::Result<TCPSocket, Error> TCPSocket::Connect(const Endpoint& endpoint)
 	{
-		TCPClient client;
+		TCPSocket client;
 
 		addrinfo hints{.ai_flags = AI_ADDRCONFIG, .ai_socktype = SOCK_STREAM, .ai_protocol = IPPROTO_TCP};
 		if (endpoint.GetAddress()->IsIPv4()) hints.ai_family = AF_INET;
@@ -61,17 +61,17 @@ namespace Strawberry::Net::Socket
 	}
 
 
-	TCPClient::TCPClient()
+	TCPSocket::TCPSocket()
 		: mSocket(-1)
 	{}
 
 
-	TCPClient::TCPClient(TCPClient&& other) noexcept
+	TCPSocket::TCPSocket(TCPSocket&& other) noexcept
 		: mSocket(std::exchange(other.mSocket, -1))
 	{}
 
 
-	TCPClient& TCPClient::operator=(TCPClient&& other) noexcept
+	TCPSocket& TCPSocket::operator=(TCPSocket&& other) noexcept
 	{
 		if (this != &other)
 		{
@@ -83,7 +83,7 @@ namespace Strawberry::Net::Socket
 	}
 
 
-	TCPClient::~TCPClient()
+	TCPSocket::~TCPSocket()
 	{
 		if (mSocket != -1)
 		{
@@ -98,7 +98,7 @@ namespace Strawberry::Net::Socket
 	}
 
 
-	bool TCPClient::Poll() const
+	bool TCPSocket::Poll() const
 	{
 #if STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
 		pollfd fds[] = {
@@ -122,7 +122,7 @@ namespace Strawberry::Net::Socket
 	}
 
 
-	Core::Result<Core::IO::DynamicByteBuffer, Core::IO::Error> TCPClient::Read(size_t length)
+	Core::Result<Core::IO::DynamicByteBuffer, Core::IO::Error> TCPSocket::Read(size_t length)
 	{
 		auto   buffer    = Core::IO::DynamicByteBuffer::Zeroes(length);
 		size_t bytesRead = 0;
@@ -139,7 +139,7 @@ namespace Strawberry::Net::Socket
 	}
 
 
-	Core::Result<size_t, Core::IO::Error> TCPClient::Write(const Core::IO::DynamicByteBuffer& bytes)
+	Core::Result<size_t, Core::IO::Error> TCPSocket::Write(const Core::IO::DynamicByteBuffer& bytes)
 	{
 		size_t bytesSent = 0;
 

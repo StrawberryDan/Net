@@ -3,8 +3,8 @@
 
 #include "Request.hpp"
 #include "Response.hpp"
-#include "Strawberry/Net/Socket/TCPClient.hpp"
-#include "Strawberry/Net/Socket/TLSClient.hpp"
+#include "Strawberry/Net/Socket/TCPSocket.hpp"
+#include "Strawberry/Net/Socket/TLSSocket.hpp"
 #include "Strawberry/Core/Util/Strings.hpp"
 
 
@@ -41,14 +41,14 @@ namespace Strawberry::Net::HTTP
 	};
 
 
-	class HTTPClient : public ClientBase<Socket::TCPClient>
+	class HTTPClient : public ClientBase<Socket::TCPSocket>
 	{
 	public:
 		explicit HTTPClient(const Net::Endpoint& endpoint);
 	};
 
 
-	class HTTPSClient : public ClientBase<Socket::TLSClient>
+	class HTTPSClient : public ClientBase<Socket::TLSSocket>
 	{
 	public:
 		explicit HTTPSClient(const Net::Endpoint& endpoint);

@@ -18,22 +18,22 @@
 
 namespace Strawberry::Net::Socket
 {
-	class TCPClient
+	class TCPSocket
 	{
-		friend class TLSClient;
+		friend class TLSSocket;
 
 
 	public:
-		static Core::Result<TCPClient, Error> Connect(const Endpoint& endpoint);
+		static Core::Result<TCPSocket, Error> Connect(const Endpoint& endpoint);
 
 
 	public:
-		TCPClient();
-		TCPClient(const TCPClient& other) = delete;
-		TCPClient(TCPClient&& other) noexcept;
-		TCPClient& operator=(const TCPClient& other) = delete;
-		TCPClient& operator=(TCPClient&& other) noexcept;
-		~TCPClient();
+		TCPSocket();
+		TCPSocket(const TCPSocket& other) = delete;
+		TCPSocket(TCPSocket&& other) noexcept;
+		TCPSocket& operator=(const TCPSocket& other) = delete;
+		TCPSocket& operator=(TCPSocket&& other) noexcept;
+		~TCPSocket();
 
 
 		[[nodiscard]] bool                       Poll() const;

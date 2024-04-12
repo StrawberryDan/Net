@@ -6,8 +6,8 @@
 //----------------------------------------------------------------------------------------------------------------------
 // Strawberry Core
 #include "Strawberry/Core/IO/Concepts.hpp"
-#include "Strawberry/Net/Socket/TCPClient.hpp"
-#include "Strawberry/Net/Socket/TLSClient.hpp"
+#include "Strawberry/Net/Socket/TCPSocket.hpp"
+#include "Strawberry/Net/Socket/TLSSocket.hpp"
 #include "Strawberry/Net/Websocket/Message.hpp"
 #include "Strawberry/Core/Sync/Mutex.hpp"
 #include "Strawberry/Core/Types/NullType.hpp"
@@ -109,7 +109,7 @@ namespace Strawberry::Net::Websocket
 
 
 	class WSClient
-		: public ClientBase<Socket::TCPClient>
+		: public ClientBase<Socket::TCPSocket>
 	{
 	public:
 		static Core::Result<WSClient, Error>
@@ -118,7 +118,7 @@ namespace Strawberry::Net::Websocket
 
 
 	class WSSClient
-		: public ClientBase<Socket::TLSClient>
+		: public ClientBase<Socket::TLSSocket>
 	{
 	public:
 		static Core::Result<WSSClient, Error>

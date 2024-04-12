@@ -38,12 +38,12 @@ if (NOT TARGET StrawberryNet)
 		src/Strawberry/Net/RTP/Packet.hpp
 		src/Strawberry/Net/Socket/API.hpp
 		src/Strawberry/Net/Socket/API.cpp
-		src/Strawberry/Net/Socket/TCPClient.hpp
-		src/Strawberry/Net/Socket/TCPClient.cpp
-		src/Strawberry/Net/Socket/TLSClient.hpp
-		src/Strawberry/Net/Socket/TLSClient.cpp
-		src/Strawberry/Net/Socket/UDPClient.hpp
-		src/Strawberry/Net/Socket/UDPClient.cpp
+			src/Strawberry/Net/Socket/TCPSocket.hpp
+			src/Strawberry/Net/Socket/TCPSocket.cpp
+			src/Strawberry/Net/Socket/TLSSocket.hpp
+			src/Strawberry/Net/Socket/TLSSocket.cpp
+			src/Strawberry/Net/Socket/UDPSocket.hpp
+			src/Strawberry/Net/Socket/UDPSocket.cpp
 		src/Strawberry/Net/Websocket/Client.hpp
 		src/Strawberry/Net/Websocket/Client.cpp
 		src/Strawberry/Net/Websocket/Client.inl

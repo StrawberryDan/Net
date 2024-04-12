@@ -20,21 +20,21 @@
 
 namespace Strawberry::Net::Socket
 {
-	class UDPClient
+	class UDPSocket
 	{
 	public:
-		static Core::Result<UDPClient, Error> Create();
-		static Core::Result<UDPClient, Error> CreateIPv4();
-		static Core::Result<UDPClient, Error> CreateIPv6();
+		static Core::Result<UDPSocket, Error> Create();
+		static Core::Result<UDPSocket, Error> CreateIPv4();
+		static Core::Result<UDPSocket, Error> CreateIPv6();
 
 
 	public:
-		UDPClient();
-		UDPClient(const UDPClient& other) = delete;
-		UDPClient(UDPClient&& other) noexcept;
-		UDPClient& operator=(const UDPClient& other) = delete;
-		UDPClient& operator=(UDPClient&& other) noexcept;
-		~UDPClient();
+		UDPSocket();
+		UDPSocket(const UDPSocket& other) = delete;
+		UDPSocket(UDPSocket&& other) noexcept;
+		UDPSocket& operator=(const UDPSocket& other) = delete;
+		UDPSocket& operator=(UDPSocket&& other) noexcept;
+		~UDPSocket();
 
 
 		[[nodiscard]] bool  Poll() const;

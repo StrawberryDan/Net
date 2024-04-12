@@ -1,7 +1,7 @@
 //======================================================================================================================
 //  Includes
 //----------------------------------------------------------------------------------------------------------------------
-#include "Strawberry/Net/Socket/TLSClient.hpp"
+#include "Strawberry/Net/Socket/TLSSocket.hpp"
 // Core
 #include "Strawberry/Core/Assert.hpp"
 #include "Strawberry/Core/IO/Logging.hpp"
@@ -56,9 +56,9 @@ std::unique_ptr<TLSContext> TLSContext::mInstance = nullptr;
 
 namespace Strawberry::Net::Socket
 {
-	Core::Result<TLSClient, Error> TLSClient::Connect(const Endpoint& endpoint)
+	Core::Result<TLSSocket, Error> TLSSocket::Connect(const Endpoint& endpoint)
 	{
-		auto tcp = TCPClient::Connect(endpoint);
+		auto tcp = TCPSocket::Connect(endpoint);
 		if (!tcp) { return tcp.Err(); }
 
 		auto ssl = SSL_new(TLSContext::Get());
@@ -74,26 +74,26 @@ namespace Strawberry::Net::Socket
 		auto connectResult = SSL_connect(ssl);
 		if (connectResult == -1) { return Error::SSLHandshake; }
 
-		TLSClient tls;
+		TLSSocket tls;
 		tls.mTCP = tcp.Unwrap();
 		tls.mSSL = ssl;
 		return tls;
 	}
 
 
-	TLSClient::TLSClient()
+	TLSSocket::TLSSocket()
 		: mSSL(nullptr)
 	{}
 
 
-	TLSClient::TLSClient(TLSClient&& other) noexcept
+	TLSSocket::TLSSocket(TLSSocket&& other) noexcept
 	{
 		mTCP = std::move(other.mTCP);
 		mSSL = std::exchange(other.mSSL, nullptr);
 	}
 
 
-	TLSClient& TLSClient::operator=(TLSClient&& other) noexcept
+	TLSSocket& TLSSocket::operator=(TLSSocket&& other) noexcept
 	{
 		if (this != &other)
 		{
@@ -105,7 +105,7 @@ namespace Strawberry::Net::Socket
 	}
 
 
-	TLSClient::~TLSClient()
+	TLSSocket::~TLSSocket()
 	{
 		if (mSSL)
 		{
@@ -122,13 +122,13 @@ namespace Strawberry::Net::Socket
 	}
 
 
-	bool TLSClient::Poll() const
+	bool TLSSocket::Poll() const
 	{
 		return mTCP.Poll();
 	}
 
 
-	Core::Result<Core::IO::DynamicByteBuffer, Core::IO::Error> TLSClient::Read(size_t length)
+	Core::Result<Core::IO::DynamicByteBuffer, Core::IO::Error> TLSSocket::Read(size_t length)
 	{
 		auto   buffer    = Core::IO::DynamicByteBuffer::Zeroes(length);
 		size_t bytesRead = 0;
@@ -159,7 +159,7 @@ namespace Strawberry::Net::Socket
 	}
 
 
-	Core::Result<size_t, Core::IO::Error> TLSClient::Write(const Core::IO::DynamicByteBuffer& bytes)
+	Core::Result<size_t, Core::IO::Error> TLSSocket::Write(const Core::IO::DynamicByteBuffer& bytes)
 	{
 		auto bytesSent = SSL_write(mSSL, bytes.Data(), static_cast<int>(bytes.Size()));
 

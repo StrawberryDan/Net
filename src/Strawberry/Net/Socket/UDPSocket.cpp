@@ -1,4 +1,4 @@
-#include "Strawberry/Net/Socket/UDPClient.hpp"
+#include "Strawberry/Net/Socket/UDPSocket.hpp"
 
 
 #include "Strawberry/Core/Assert.hpp"
@@ -24,7 +24,7 @@
 
 namespace Strawberry::Net::Socket
 {
-	Core::Result<UDPClient, Error> UDPClient::Create()
+	Core::Result<UDPSocket, Error> UDPSocket::Create()
 	{
 		auto handle = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
 		if (handle == -1) { return Error::SocketCreation; }
@@ -33,45 +33,45 @@ namespace Strawberry::Net::Socket
 		auto optSetResult = setsockopt(handle, IPPROTO_IPV6, IPV6_V6ONLY, reinterpret_cast<const char*>(&ipv6Only), sizeof(ipv6Only));
 		Core::Assert(optSetResult == 0);
 
-		UDPClient client;
+		UDPSocket client;
 		client.mSocket = handle;
 		return client;
 	}
 
 
-	Core::Result<UDPClient, Error> UDPClient::CreateIPv4()
+	Core::Result<UDPSocket, Error> UDPSocket::CreateIPv4()
 	{
 		auto handle = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 		if (handle == -1) { return Error::SocketCreation; }
 
-		UDPClient client;
+		UDPSocket client;
 		client.mSocket = handle;
 		return client;
 	}
 
 
-	Core::Result<UDPClient, Error> UDPClient::CreateIPv6()
+	Core::Result<UDPSocket, Error> UDPSocket::CreateIPv6()
 	{
 		auto handle = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
 		if (handle == -1) { return Error::SocketCreation; }
 
-		UDPClient client;
+		UDPSocket client;
 		client.mSocket = handle;
 		return client;
 	}
 
 
-	UDPClient::UDPClient()
+	UDPSocket::UDPSocket()
 		: mSocket(-1)
 	{}
 
 
-	UDPClient::UDPClient(UDPClient&& other) noexcept
+	UDPSocket::UDPSocket(UDPSocket&& other) noexcept
 		: mSocket(std::exchange(other.mSocket, -1))
 	{}
 
 
-	UDPClient& UDPClient::operator=(UDPClient&& other) noexcept
+	UDPSocket& UDPSocket::operator=(UDPSocket&& other) noexcept
 	{
 		if (this != &other)
 		{
@@ -83,7 +83,7 @@ namespace Strawberry::Net::Socket
 	}
 
 
-	UDPClient::~UDPClient()
+	UDPSocket::~UDPSocket()
 	{
 		if (mSocket != -1)
 		{
@@ -98,7 +98,7 @@ namespace Strawberry::Net::Socket
 	}
 
 
-	bool UDPClient::Poll() const
+	bool UDPSocket::Poll() const
 	{
 #if STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
 		pollfd fds[] = {
@@ -121,7 +121,7 @@ namespace Strawberry::Net::Socket
 #endif
 	}
 
-	Core::Result<std::tuple<Core::Optional<Endpoint>, Core::IO::DynamicByteBuffer>, Core::IO::Error> UDPClient::Read()
+	Core::Result<std::tuple<Core::Optional<Endpoint>, Core::IO::DynamicByteBuffer>, Core::IO::Error> UDPSocket::Read()
 	{
 		sockaddr_storage peer{};
 		socklen_t        peerLen = 0;
@@ -147,7 +147,7 @@ namespace Strawberry::Net::Socket
 	}
 
 
-	Core::Result<size_t, Core::IO::Error> UDPClient::Write(const Endpoint& endpoint, const Core::IO::DynamicByteBuffer& bytes) const
+	Core::Result<size_t, Core::IO::Error> UDPSocket::Write(const Endpoint& endpoint, const Core::IO::DynamicByteBuffer& bytes) const
 	{
 		addrinfo  hints{.ai_flags = AI_ADDRCONFIG, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
 		addrinfo* peer   = nullptr;

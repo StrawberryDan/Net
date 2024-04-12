@@ -4,11 +4,11 @@
 namespace Strawberry::Net::HTTP
 {
 	HTTPClient::HTTPClient(const Endpoint& endpoint)
-		: ClientBase<Socket::TCPClient>(endpoint)
+		: ClientBase<Socket::TCPSocket>(endpoint)
 	{}
 
 
 	HTTPSClient::HTTPSClient(const Endpoint& endpoint)
-		: ClientBase<Socket::TLSClient>(endpoint)
+		: ClientBase<Socket::TLSSocket>(endpoint)
 	{}
 } // namespace Strawberry::Net::HTTP
