@@ -139,22 +139,42 @@ namespace Strawberry::Net::Socket
 		auto   buffer    = Core::IO::DynamicByteBuffer::Zeroes(length);
 		size_t bytesRead = 0;
 
-		while (bytesRead < length)
+		auto recvResult = recv(mSocket, reinterpret_cast<char*>(buffer.Data()) + bytesRead, length - bytesRead, 0);
+		if (recvResult > 0) { bytesRead += recvResult; }
+		else
 		{
-			auto recvResult = recv(mSocket, reinterpret_cast<char*>(buffer.Data()) + bytesRead, length - bytesRead, 0);
-			if (recvResult > 0) { bytesRead += recvResult; }
-			else
+			switch (recvResult)
 			{
-				switch (recvResult)
-				{
-					default:
-						Core::Unreachable();
-				}
+				default:
+					Core::Unreachable();
 			}
 		}
 
 		Core::Assert(bytesRead == length);
 		return buffer;
+	}
+
+
+	Core::Result<Core::IO::DynamicByteBuffer, Core::IO::Error> TCPSocket::ReadAll(size_t length)
+	{
+		 auto buffer = Core::IO::DynamicByteBuffer::WithCapacity(length);
+
+
+		 while (buffer.Size() < length)
+		 {
+			 auto read = Read(length - buffer.Size());
+
+			 if (read.IsOk())
+			 {
+				 buffer.Push(read.Unwrap());
+			 }
+			 else
+			 {
+				 return read.Err();
+			 }
+		 }
+
+		 return buffer;
 	}
 
 

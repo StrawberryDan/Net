@@ -48,6 +48,7 @@ namespace Strawberry::Net::Socket
 		const Endpoint&                                            GetEndpoint() const noexcept;
 		[[nodiscard]] bool                                         Poll() const;
 		Core::Result<Core::IO::DynamicByteBuffer, Core::IO::Error> Read(size_t length);
+		Core::Result<Core::IO::DynamicByteBuffer, Core::IO::Error> ReadAll(size_t length);
 		Core::Result<size_t, Core::IO::Error>                      Write(const Core::IO::DynamicByteBuffer& bytes);
 
 
