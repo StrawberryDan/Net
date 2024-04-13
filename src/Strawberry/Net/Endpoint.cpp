@@ -93,6 +93,13 @@ namespace Strawberry::Net
 	}
 
 
+	Endpoint::Endpoint()
+		: mHostName()
+		, mAddress()
+		, mPort(-1)
+	{}
+
+
 	Endpoint::Endpoint(IPAddress address, uint16_t port)
 		: mAddress(address)
 		, mPort(port)

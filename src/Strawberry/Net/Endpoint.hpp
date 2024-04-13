@@ -22,6 +22,7 @@ namespace Strawberry::Net
 
 
 	public:
+		Endpoint();
 		Endpoint(const std::string& hostname, uint16_t port);
 		Endpoint(IPAddress address, uint16_t port);
 
@@ -35,6 +36,6 @@ namespace Strawberry::Net
 	private:
 		Core::Optional<std::string> mHostName;
 		Core::Optional<IPAddress>   mAddress;
-		uint16_t              mPort;
+		uint16_t                    mPort;
 	};
 } // namespace Strawberry::Net
