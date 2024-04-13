@@ -22,6 +22,14 @@ namespace Strawberry::Net::Socket
 {
 	class UDPSocket
 	{
+	private:
+#if STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
+		using SocketHandle = int;
+#elif STRAWBERRY_TARGET_WINDOWS
+		using SocketHandle = SOCKET;
+#endif
+
+
 	public:
 		static Core::Result<UDPSocket, Error> Create();
 		static Core::Result<UDPSocket, Error> CreateIPv4();
@@ -45,11 +53,7 @@ namespace Strawberry::Net::Socket
 
 
 	private:
-#if STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
-		int mSocket;
-#elif STRAWBERRY_TARGET_WINDOWS
-		SOCKET mSocket;
-#endif
+		SocketHandle mSocket;
 
 		static constexpr size_t     BUFFER_SIZE = 25536;
 		Core::IO::ByteBuffer<BUFFER_SIZE> mBuffer;

@@ -23,6 +23,14 @@ namespace Strawberry::Net::Socket
 		friend class TLSSocket;
 
 
+	private:
+#if STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
+		using SocketHandle = int;
+#elif STRAWBERRY_TARGET_WINDOWS
+		using SocketHandle = SOCKET;
+#endif
+
+
 	public:
 		static Core::Result<TCPSocket, Error> Connect(const Endpoint& endpoint);
 
@@ -42,10 +50,6 @@ namespace Strawberry::Net::Socket
 
 
 	private:
-#if STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
-		int mSocket;
-#elif STRAWBERRY_TARGET_WINDOWS
-		SOCKET mSocket;
-#endif
+		SocketHandle mSocket;
 	};
 } // namespace Strawberry::Net::Socket
