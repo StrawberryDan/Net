@@ -21,6 +21,7 @@ namespace Strawberry::Net::Socket
 	class TCPSocket
 	{
 		friend class TLSSocket;
+		friend class TCPListener;
 
 
 	private:

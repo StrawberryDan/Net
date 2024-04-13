@@ -53,7 +53,9 @@ if (NOT TARGET StrawberryNet)
 		src/Strawberry/Net/Address.cpp
 		src/Strawberry/Net/Endpoint.hpp
 		src/Strawberry/Net/Endpoint.cpp
-		src/Strawberry/Net/Error.hpp)
+		src/Strawberry/Net/Error.hpp
+			src/Strawberry/Net/Socket/TCPListener.hpp
+			src/Strawberry/Net/Socket/TCPListener.cpp)
 	target_include_directories(StrawberryNet PUBLIC src/)
 	target_link_libraries(StrawberryNet PUBLIC StrawberryCore OpenSSL::SSL OpenSSL::Crypto)
 	set_target_properties(StrawberryNet PROPERTIES CXX_STANDARD 20)
