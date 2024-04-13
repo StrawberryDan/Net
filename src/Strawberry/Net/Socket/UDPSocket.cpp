@@ -156,7 +156,7 @@ namespace Strawberry::Net::Socket
 	}
 
 
-	Core::Result<size_t, Core::IO::Error> UDPSocket::Write(const Endpoint& endpoint, const Core::IO::DynamicByteBuffer& bytes) const
+	Core::Result<size_t, Core::IO::Error> UDPSocket::Send(const Endpoint& endpoint, const Core::IO::DynamicByteBuffer& bytes) const
 	{
 		addrinfo  hints{.ai_flags = AI_ADDRCONFIG, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
 		addrinfo* peer   = nullptr;
