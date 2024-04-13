@@ -21,6 +21,15 @@ namespace Strawberry::Net
 
 	public:
 		// Constructors
+		IPv4Address(uint8_t a, uint8_t b, uint8_t c, uint8_t d)
+		{
+			mData[0] = a;
+			mData[1] = b;
+			mData[2] = c;
+			mData[3] = d;
+		}
+
+
 		IPv4Address(const Core::IO::ByteBuffer<4> bytes)
 			: mData(bytes)
 		{}
