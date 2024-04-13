@@ -7,17 +7,13 @@
 
 
 #if STRAWBERRY_TARGET_WINDOWS
-#include <winsock2.h>
+	#include <winsock2.h>
 #include <ws2tcpip.h>
 #elif STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
-
-
-#include <netdb.h>
-#include <poll.h>
-#include <sys/socket.h>
-#include <unistd.h>
-
-
+	#include <netdb.h>
+	#include <poll.h>
+	#include <sys/socket.h>
+	#include <unistd.h>
 #endif // STRAWBERRY_TARGET_WINDOWS
 
 
@@ -28,11 +24,19 @@ namespace Strawberry::Net::Socket
 		TCPSocket tcpSocket;
 
 		addrinfo hints{.ai_flags = AI_ADDRCONFIG, .ai_socktype = SOCK_STREAM, .ai_protocol = IPPROTO_TCP};
-		if (endpoint.GetAddress()->IsIPv4()) hints.ai_family = AF_INET;
+		if (endpoint.GetAddress()->IsIPv4())
+		{
+			hints.ai_family = AF_INET;
+		}
 		else if (endpoint.GetAddress()->IsIPv6())
+		{
 			hints.ai_family = AF_INET6;
+		}
 		else
+		{
 			Core::Unreachable();
+		}
+
 		addrinfo* peerAddress = nullptr;
 		auto      addrResult  = getaddrinfo(endpoint.GetAddress()->AsString().c_str(), std::to_string(endpoint.GetPort()).c_str(), &hints, &peerAddress);
 		if (addrResult != 0)
@@ -137,9 +141,16 @@ namespace Strawberry::Net::Socket
 
 		while (bytesRead < length)
 		{
-			auto thisRead = recv(mSocket, reinterpret_cast<char*>(buffer.Data()) + bytesRead, length - bytesRead, 0);
-			if (thisRead > 0) { bytesRead += thisRead; }
-			else { Core::Unreachable(); }
+			auto recvResult = recv(mSocket, reinterpret_cast<char*>(buffer.Data()) + bytesRead, length - bytesRead, 0);
+			if (recvResult > 0) { bytesRead += recvResult; }
+			else
+			{
+				switch (recvResult)
+				{
+					default:
+						Core::Unreachable();
+				}
+			}
 		}
 
 		Core::Assert(bytesRead == length);
@@ -153,9 +164,16 @@ namespace Strawberry::Net::Socket
 
 		while (bytesSent < bytes.Size())
 		{
-			auto thisSend = send(mSocket, reinterpret_cast<const char*>(bytes.Data()) + bytesSent, bytes.Size() - bytesSent, 0);
-			if (thisSend > 0) { bytesSent += thisSend; }
-			else { Core::Unreachable(); }
+			auto sendResult = send(mSocket, reinterpret_cast<const char*>(bytes.Data()) + bytesSent, bytes.Size() - bytesSent, 0);
+			if (sendResult > 0) { bytesSent += sendResult; }
+			else
+			{
+				switch (sendResult)
+				{
+					default:
+						Core::Unreachable();
+				}
+			}
 		}
 
 		Core::Assert(bytesSent == bytes.Size());
