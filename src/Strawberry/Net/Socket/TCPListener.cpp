@@ -38,6 +38,7 @@ namespace Strawberry::Net::Socket
 		}
 
 
+		// Create Socket.
 		listener.mSocket = socket(addressFamily, SOCK_STREAM, IPPROTO_TCP);
 		if (listener.mSocket == -1)
 		{
@@ -45,14 +46,54 @@ namespace Strawberry::Net::Socket
 		}
 
 
-		int listenResult = listen(listener.mSocket, SOMAXCONN);
-		switch (listenResult)
+		// Bind Socket.
+		int bindResult;
+		if (endpoint.GetAddress()->IsIPv4())
 		{
-			case 0:
-				break;
-			default:
-				Core::Unreachable();
+			auto addressBytes = endpoint.GetAddress()->AsIPv4()->AsBytes();
+			sockaddr_in address;
+			address.sin_family = AF_INET;
+			memcpy(&address.sin_addr.S_un.S_un_b, addressBytes.Data(), addressBytes.Size());
+			address.sin_port = endpoint.GetPort();
+			bindResult = bind(listener.mSocket, reinterpret_cast<sockaddr*>(&address), sizeof(address));
 		}
+		else if (endpoint.GetAddress()->IsIPv6())
+		{
+			auto addressBytes = endpoint.GetAddress()->AsIPv6()->AsBytes();
+			sockaddr_in6 address;
+			address.sin6_family = AF_INET6;
+			memcpy(&address.sin6_addr.u.Byte, addressBytes.Data(), addressBytes.Size());
+			address.sin6_port = endpoint.GetPort();
+			bindResult = bind(listener.mSocket, reinterpret_cast<sockaddr*>(&address), sizeof(address));
+		}
+		else
+		{
+			Core::Unreachable();
+		}
+
+		if (bindResult == SOCKET_ERROR)
+		{
+			auto error = WSAGetLastError();
+			switch (error)
+			{
+				default:
+					Core::Unreachable();
+			}
+		}
+
+
+		// Put socket into listen mode.
+		int listenResult = listen(listener.mSocket, SOMAXCONN);
+		if (listenResult == SOCKET_ERROR)
+		{
+			auto error = WSAGetLastError();
+			switch (error)
+			{
+				default:
+					Core::Unreachable();
+			}
+		}
+		Core::AssertEQ(listenResult, 0);
 
 
 		return std::move(listener);
