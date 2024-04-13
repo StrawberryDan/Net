@@ -25,7 +25,7 @@ namespace Strawberry::Net::Socket
 {
 	Core::Result<TCPSocket, Error> TCPSocket::Connect(const Endpoint& endpoint)
 	{
-		TCPSocket client;
+		TCPSocket tcpSocket;
 
 		addrinfo hints{.ai_flags = AI_ADDRCONFIG, .ai_socktype = SOCK_STREAM, .ai_protocol = IPPROTO_TCP};
 		if (endpoint.GetAddress()->IsIPv4()) hints.ai_family = AF_INET;
@@ -56,8 +56,9 @@ namespace Strawberry::Net::Socket
 		}
 
 		freeaddrinfo(peerAddress);
-		client.mSocket = handle;
-		return client;
+		tcpSocket.mSocket   = handle;
+		tcpSocket.mEndpoint = endpoint;
+		return tcpSocket;
 	}
 
 
@@ -68,6 +69,7 @@ namespace Strawberry::Net::Socket
 
 	TCPSocket::TCPSocket(TCPSocket&& other) noexcept
 		: mSocket(std::exchange(other.mSocket, -1))
+		, mEndpoint(std::move(other.mEndpoint))
 	{}
 
 
@@ -95,6 +97,12 @@ namespace Strawberry::Net::Socket
 			Core::Unreachable();
 #endif
 		}
+	}
+
+
+	const Endpoint& TCPSocket::GetEndpoint() const noexcept
+	{
+		return mEndpoint;
 	}
 
 

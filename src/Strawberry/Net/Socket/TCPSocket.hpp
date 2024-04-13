@@ -44,12 +44,14 @@ namespace Strawberry::Net::Socket
 		~TCPSocket();
 
 
-		[[nodiscard]] bool                       Poll() const;
+		const Endpoint&                                            GetEndpoint() const noexcept;
+		[[nodiscard]] bool                                         Poll() const;
 		Core::Result<Core::IO::DynamicByteBuffer, Core::IO::Error> Read(size_t length);
-		Core::Result<size_t, Core::IO::Error>                Write(const Core::IO::DynamicByteBuffer& bytes);
+		Core::Result<size_t, Core::IO::Error>                      Write(const Core::IO::DynamicByteBuffer& bytes);
 
 
 	private:
 		SocketHandle mSocket;
+		Endpoint     mEndpoint;
 	};
 } // namespace Strawberry::Net::Socket
