@@ -46,31 +46,31 @@ namespace Strawberry::Net::Socket
 		}
 
 
-		// Bind Socket.
-		int bindResult;
+		// Get address info
+		addrinfo hints{.ai_flags = AI_ADDRCONFIG, .ai_socktype = SOCK_STREAM, .ai_protocol = IPPROTO_TCP};
 		if (endpoint.GetAddress()->IsIPv4())
 		{
-			auto addressBytes = endpoint.GetAddress()->AsIPv4()->AsBytes();
-			sockaddr_in address;
-			address.sin_family = AF_INET;
-			memcpy(&address.sin_addr.S_un.S_un_b, addressBytes.Data(), addressBytes.Size());
-			address.sin_port = endpoint.GetPort();
-			bindResult = bind(listener.mSocket, reinterpret_cast<sockaddr*>(&address), sizeof(address));
+			hints.ai_family = AF_INET;
 		}
 		else if (endpoint.GetAddress()->IsIPv6())
 		{
-			auto addressBytes = endpoint.GetAddress()->AsIPv6()->AsBytes();
-			sockaddr_in6 address;
-			address.sin6_family = AF_INET6;
-			memcpy(&address.sin6_addr.u.Byte, addressBytes.Data(), addressBytes.Size());
-			address.sin6_port = endpoint.GetPort();
-			bindResult = bind(listener.mSocket, reinterpret_cast<sockaddr*>(&address), sizeof(address));
+			hints.ai_family = AF_INET6;
 		}
 		else
 		{
 			Core::Unreachable();
 		}
+		addrinfo* peerAddress = nullptr;
+		auto      addrResult  = getaddrinfo(endpoint.GetAddress()->AsString().c_str(), std::to_string(endpoint.GetPort()).c_str(), &hints, &peerAddress);
+		if (addrResult != 0)
+		{
+			freeaddrinfo(peerAddress);
+			return Error::AddressResolution;
+		}
 
+
+		// Bind Socket.
+		int bindResult = bind(listener.mSocket, peerAddress->ai_addr, sizeof(*peerAddress->ai_addr));
 		if (bindResult == SOCKET_ERROR)
 		{
 			auto error = WSAGetLastError();
@@ -143,12 +143,17 @@ namespace Strawberry::Net::Socket
 		TCPSocket socket;
 
 		sockaddr_storage peer{};
-		socklen_t        peerLen{};
+		socklen_t        peerLen = sizeof(peer);
 
 		socket.mSocket = accept(mSocket, reinterpret_cast<sockaddr*>(&peer), &peerLen);
 		if (socket.mSocket == INVALID_SOCKET)
 		{
-			Core::Unreachable();
+			auto error = WSAGetLastError();
+			switch (error)
+			{
+				default:
+					Core::Unreachable();
+			}
 		}
 
 
