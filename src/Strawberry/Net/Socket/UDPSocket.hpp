@@ -20,6 +20,13 @@
 
 namespace Strawberry::Net::Socket
 {
+	struct UDPPacket
+	{
+		Core::Optional<Endpoint>    endpoint;
+		Core::IO::DynamicByteBuffer contents;
+	};
+
+
 	class UDPSocket
 	{
 	private:
@@ -45,11 +52,9 @@ namespace Strawberry::Net::Socket
 		~UDPSocket();
 
 
-		[[nodiscard]] bool  Poll() const;
-		Core::Result<std::tuple<Core::Optional<Endpoint>, Core::IO::DynamicByteBuffer>, Core::IO::Error>
-		Read();
-		Core::Result<size_t, Core::IO::Error> Write(const Endpoint& endpoint,
-											  const Core::IO::DynamicByteBuffer& bytes) const;
+		[[nodiscard]] bool                                  Poll() const;
+		[[nodiscard]] Core::Result<UDPPacket, Error>        Receive();
+		[[nodiscard]] Core::Result<size_t, Core::IO::Error> Write(const Endpoint& endpoint, const Core::IO::DynamicByteBuffer& bytes) const;
 
 
 	private:

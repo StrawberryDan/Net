@@ -121,11 +121,13 @@ namespace Strawberry::Net::Socket
 #endif
 	}
 
-	Core::Result<std::tuple<Core::Optional<Endpoint>, Core::IO::DynamicByteBuffer>, Core::IO::Error> UDPSocket::Read()
+	Core::Result<UDPPacket, Error> UDPSocket::Receive()
 	{
 		sockaddr_storage peer{};
 		socklen_t        peerLen = 0;
-		auto bytesRead           = recvfrom(mSocket, reinterpret_cast<char*>(mBuffer.Data()), mBuffer.Size(), 0, reinterpret_cast<sockaddr*>(&peer), &peerLen);
+		auto             bytesRead = recvfrom(mSocket,
+											  reinterpret_cast<char*>(mBuffer.Data()), mBuffer.Size(), 0,
+											  reinterpret_cast<sockaddr*>(&peer), &peerLen);
 
 		if (bytesRead >= 0)
 		{
@@ -140,8 +142,15 @@ namespace Strawberry::Net::Socket
 				auto* sockaddr = reinterpret_cast<sockaddr_in6*>(&peer);
 				endpoint.Emplace(IPv6Address(Core::IO::ByteBuffer<16>(sockaddr->sin6_addr)), sockaddr->sin6_port);
 			}
+			else
+			{
+				Core::Unreachable();
+			}
 
-			return std::make_tuple(endpoint, Core::IO::DynamicByteBuffer(mBuffer.Data(), bytesRead));
+			return UDPPacket {
+				.endpoint = std::move(endpoint),
+				.contents = Core::IO::DynamicByteBuffer(mBuffer.Data(), bytesRead)
+			};
 		}
 		else { Core::Unreachable(); }
 	}
