@@ -20,7 +20,7 @@ namespace Strawberry::Net::Socket
 	Core::Result<TCPListener, Error> TCPListener::Bind(const Endpoint& endpoint)
 	{
 		TCPListener listener;
-		std::construct_at(&listener.mEndpoint, endpoint);
+		listener.mEndpoint = endpoint;
 
 
 		int addressFamily;
