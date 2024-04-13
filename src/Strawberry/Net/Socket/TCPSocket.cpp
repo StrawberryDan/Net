@@ -138,7 +138,7 @@ namespace Strawberry::Net::Socket
 	{
 		auto buffer = Core::IO::DynamicByteBuffer::Zeroes(length);
 
-		auto recvResult = recv(mSocket, reinterpret_cast<char*>(buffer.Data()) + bytesRead, length - bytesRead, 0);
+		auto recvResult = recv(mSocket, reinterpret_cast<char*>(buffer.Data()), buffer.Size(), 0);
 		if (recvResult == -1)
 		{
 			auto error = WSAGetLastError();
@@ -152,6 +152,7 @@ namespace Strawberry::Net::Socket
 
 		if (recvResult == 0) return Core::IO::Error::Closed;
 		Core::Assert(recvResult > 0);
+		buffer.Resize(recvResult);
 		return buffer;
 	}
 
