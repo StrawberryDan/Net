@@ -144,6 +144,8 @@ namespace Strawberry::Net::Socket
 			auto error = WSAGetLastError();
 			switch (error)
 			{
+				case WSAECONNRESET:
+					return Core::IO::Error::Closed;
 				default:
 					Core::Unreachable();
 			}
@@ -190,8 +192,11 @@ namespace Strawberry::Net::Socket
 			if (sendResult > 0) { bytesSent += sendResult; }
 			else
 			{
-				switch (sendResult)
+				auto error = WSAGetLastError();
+				switch (error)
 				{
+					case WSAECONNRESET:
+						return Core::IO::Error::Closed;
 					default:
 						Core::Unreachable();
 				}
