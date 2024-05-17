@@ -1,14 +1,21 @@
 #pragma once
 
-
+//======================================================================================================================
+//	Includes
+//======================================================================================================================
 #include "Strawberry/Net/Error.hpp"
+#include "Strawberry/Net/Socket/TCPSocket.hpp"
 #include "Strawberry/Core/Types/Optional.hpp"
-#include "TCPSocket.hpp"
-#include <memory>
+// Open SSL
 #include <openssl/ssl.h>
+// Standard Library
+#include <memory>
 #include <string>
 
 
+//======================================================================================================================
+//	Includes
+//======================================================================================================================
 namespace Strawberry::Net::Socket
 {
 	class TLSSocket
