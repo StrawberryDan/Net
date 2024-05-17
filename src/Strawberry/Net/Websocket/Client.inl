@@ -338,4 +338,12 @@ namespace Strawberry::Net::Websocket
 
 		mError = Error::ConnectionReset;
 	}
+
+
+	template <typename S>
+	ClientBase<S>::ClientBase(Socket::Buffered<S> socket)
+		: mSocket(std::move(socket))
+	{
+		mSocket.Resize(SOCKET_BUFFER_SIZE);
+	}
 } // namespace Strawberry::Net::Websocket

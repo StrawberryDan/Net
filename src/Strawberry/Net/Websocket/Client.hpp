@@ -5,6 +5,7 @@
 //		Includes
 //----------------------------------------------------------------------------------------------------------------------
 #include "Strawberry/Net/Error.hpp"
+#include "Strawberry/Net/Socket/Buffered.hpp"
 // Strawberry Core
 #include "Strawberry/Core/IO/Concepts.hpp"
 #include "Strawberry/Net/Socket/TCPSocket.hpp"
@@ -27,6 +28,10 @@ namespace Strawberry::Net::Websocket
 	template<typename S>
 	class ClientBase
 	{
+	public:
+		static constexpr size_t SOCKET_BUFFER_SIZE = 2<15;
+
+
 	public:
 		//======================================================================================================================
 		//  Contruction/Destruction
@@ -89,12 +94,12 @@ namespace Strawberry::Net::Websocket
 
 
 	protected:
-		ClientBase() = default;
+		ClientBase(Socket::Buffered<S> socket);
 
 
 	protected:
-		S mSocket;
-		Core::Optional<Error> mError;
+		Socket::Buffered<S> mSocket;
+		Core::Optional<Error>   mError;
 	};
 
 
@@ -104,6 +109,10 @@ namespace Strawberry::Net::Websocket
 	public:
 		static Core::Result<WSClient, Error>
 		Connect(const Endpoint& endpoint, const std::string& resource);
+
+
+	protected:
+		WSClient(Socket::Buffered<Socket::TCPSocket> socket);
 	};
 
 
@@ -113,6 +122,10 @@ namespace Strawberry::Net::Websocket
 	public:
 		static Core::Result<WSSClient, Error>
 		Connect(const Endpoint& endpoint, const std::string& resource);
+
+
+	protected:
+		WSSClient(Socket::Buffered<Socket::TLSSocket> socket);
 	};
 } // namespace Strawberry::Net::Websocket
 

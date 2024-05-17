@@ -5,6 +5,7 @@
 #include "Response.hpp"
 #include "Strawberry/Net/Socket/TCPSocket.hpp"
 #include "Strawberry/Net/Socket/TLSSocket.hpp"
+#include "Strawberry/Net/Socket/Buffered.hpp"
 #include "Strawberry/Core/Util/Strings.hpp"
 
 
@@ -14,6 +15,10 @@ namespace Strawberry::Net::HTTP
 	class ClientBase
 	{
 	public:
+		static constexpr size_t SOCKET_BUFFER_SIZE = 1<15;
+
+
+	public:
 		/// Sends an HTTP Request
 		void     SendRequest(const Request& request);
 		/// Waits for an HTTP Response
@@ -21,7 +26,7 @@ namespace Strawberry::Net::HTTP
 
 
 		/// Removes and returns the socket of an rvalue HTTP client.
-		inline S IntoSocket()&& { return std::move(mSocket); }
+		inline Socket::Buffered<S> IntoSocket()&& { return std::move(mSocket); }
 
 
 	protected:
@@ -37,7 +42,7 @@ namespace Strawberry::Net::HTTP
 
 
 	private:
-		S mSocket;
+		Socket::Buffered<S> mSocket;
 	};
 
 

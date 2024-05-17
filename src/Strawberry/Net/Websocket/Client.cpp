@@ -17,11 +17,15 @@ namespace Strawberry::Net::Websocket
 		if (response.GetStatus() != 101) { return Error::Refused; }
 
 
-		WSClient client;
-		client.mSocket = std::move(handshaker).IntoSocket();
+		WSClient client(std::move(handshaker).IntoSocket());
 
 		return std::move(client);
 	}
+
+
+	WSClient::WSClient(Socket::Buffered<Socket::TCPSocket> socket)
+		: ClientBase(std::move(socket))
+	{}
 
 
 	Core::Result<WSSClient, Error> WSSClient::Connect(const Endpoint& endpoint, const std::string& resource)
@@ -38,8 +42,12 @@ namespace Strawberry::Net::Websocket
 		if (response.GetStatus() != 101) { return Error::Refused; }
 
 
-		WSSClient client;
-		client.mSocket = std::move(handshaker).IntoSocket();
+		WSSClient client(std::move(handshaker).IntoSocket());
 		return std::move(client);
 	}
+
+
+	WSSClient::WSSClient(Socket::Buffered<Socket::TLSSocket> socket)
+		: ClientBase(std::move(socket))
+	{}
 } // namespace Strawberry::Net::Websocket
