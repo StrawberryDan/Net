@@ -134,7 +134,7 @@ namespace Strawberry::Net::Socket
 	}
 
 
-	Core::Result<Core::IO::DynamicByteBuffer, Core::IO::Error> TCPSocket::Read(size_t length)
+	StreamReadResult TCPSocket::Read(size_t length)
 	{
 		auto buffer = Core::IO::DynamicByteBuffer::Zeroes(length);
 
@@ -145,21 +145,21 @@ namespace Strawberry::Net::Socket
 			switch (error)
 			{
 				case WSAECONNRESET:
-					return Core::IO::Error::Closed;
+					return Error::ConnectionReset;
 				default:
 					Core::Unreachable();
 			}
 		}
 
 
-		if (recvResult == 0) return Core::IO::Error::Closed;
+		if (recvResult == 0) return Error::ConnectionReset;
 		Core::Assert(recvResult > 0);
 		buffer.Resize(recvResult);
 		return buffer;
 	}
 
 
-	Core::Result<Core::IO::DynamicByteBuffer, Core::IO::Error> TCPSocket::ReadAll(size_t length)
+	StreamReadResult TCPSocket::ReadAll(size_t length)
 	{
 		 auto buffer = Core::IO::DynamicByteBuffer::WithCapacity(length);
 
@@ -182,7 +182,7 @@ namespace Strawberry::Net::Socket
 	}
 
 
-	Core::Result<size_t, Core::IO::Error> TCPSocket::Write(const Core::IO::DynamicByteBuffer& bytes)
+	StreamWriteResult TCPSocket::Write(const Core::IO::DynamicByteBuffer& bytes)
 	{
 		size_t bytesSent = 0;
 
@@ -196,7 +196,7 @@ namespace Strawberry::Net::Socket
 				switch (error)
 				{
 					case WSAECONNRESET:
-						return Core::IO::Error::Closed;
+						return Error::ConnectionReset;
 					default:
 						Core::Unreachable();
 				}

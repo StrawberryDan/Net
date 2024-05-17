@@ -4,6 +4,7 @@
 //======================================================================================================================
 //		Includes
 //----------------------------------------------------------------------------------------------------------------------
+#include "Strawberry/Net/Error.hpp"
 // Strawberry Core
 #include "Strawberry/Core/IO/Concepts.hpp"
 #include "Strawberry/Net/Socket/TCPSocket.hpp"
@@ -23,16 +24,7 @@
 
 namespace Strawberry::Net::Websocket
 {
-	enum class Error
-	{
-		NoMessage,
-		Closed,
-		Refused,
-		ProtocolError,
-	};
-
-
-	template<Core::IO::ReadWrite S>
+	template<typename S>
 	class ClientBase
 	{
 	public:
@@ -45,10 +37,8 @@ namespace Strawberry::Net::Websocket
 
 		ClientBase(ClientBase&& rhs) noexcept
 			: mSocket(std::move(rhs.mSocket))
-			  , mError(std::move(rhs.mError))
-		{
-			rhs.mError = Error::Closed;
-		}
+			, mError(std::move(rhs.mError))
+		{}
 
 
 		ClientBase& operator=(ClientBase&& rhs) noexcept

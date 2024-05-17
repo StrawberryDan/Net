@@ -13,5 +13,9 @@ namespace Strawberry::Net
 		SSLHandshake,
 		ParsingEndpoint,
 		ParsingRTPPacket,
+		ConnectionReset,
+		NoData,
+		ProtocolError,
+		Refused,
 	};
 }

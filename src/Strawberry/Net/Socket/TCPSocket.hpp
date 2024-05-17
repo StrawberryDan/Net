@@ -1,16 +1,18 @@
 #pragma once
 
 
-#include <string>
-
-
+//======================================================================================================================
+//	Includes
+//======================================================================================================================
 #include "Strawberry/Core/IO/DynamicByteBuffer.hpp"
 #include "Strawberry/Core/IO/Error.hpp"
 #include "Strawberry/Net/Endpoint.hpp"
 #include "Strawberry/Net/Error.hpp"
 #include "Strawberry/Core/Types/Result.hpp"
-
-
+#include "Strawberry/Net/Socket/Types.hpp"
+// Standard Library
+#include <string>
+// Platform Specific
 #if STRAWBERRY_TARGET_WINDOWS
 #include <winsock2.h>
 #endif
@@ -45,11 +47,11 @@ namespace Strawberry::Net::Socket
 		~TCPSocket();
 
 
-		const Endpoint&                                            GetEndpoint() const noexcept;
-		[[nodiscard]] bool                                         Poll() const;
-		Core::Result<Core::IO::DynamicByteBuffer, Core::IO::Error> Read(size_t length);
-		Core::Result<Core::IO::DynamicByteBuffer, Core::IO::Error> ReadAll(size_t length);
-		Core::Result<size_t, Core::IO::Error>                      Write(const Core::IO::DynamicByteBuffer& bytes);
+		const Endpoint&    GetEndpoint() const noexcept;
+		[[nodiscard]] bool Poll() const;
+		StreamReadResult   Read(size_t length);
+		StreamReadResult   ReadAll(size_t length);
+		StreamWriteResult  Write(const Core::IO::DynamicByteBuffer& bytes);
 
 
 	private:

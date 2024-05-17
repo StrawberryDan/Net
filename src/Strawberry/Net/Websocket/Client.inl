@@ -14,14 +14,14 @@
 
 namespace Strawberry::Net::Websocket
 {
-	template <Core::IO::ReadWrite S>
+	template <typename S>
 	ClientBase<S>::~ClientBase()
 	{
 		Disconnect();
 	}
 
 
-	template <Core::IO::ReadWrite S>
+	template <typename S>
 	Core::Result<Core::NullType, Error> ClientBase<S>::SendMessage(const Message& message)
 	{
 		auto result = TransmitFrame(message);
@@ -36,19 +36,19 @@ namespace Strawberry::Net::Websocket
 	}
 
 
-	template <Core::IO::ReadWrite S>
+	template <typename S>
 	Core::Result<Message, Error> ClientBase<S>::ReadMessage()
 	{
 		return ReceiveFrame();
 	}
 
 
-	template <Core::IO::ReadWrite S>
+	template <typename S>
 	Core::Result<Message, Error> ClientBase<S>::WaitMessage()
 	{
 		while (true)
 		{
-			if (auto msg = ReadMessage(); msg.IsErr() && msg.Err() == Error::NoMessage)
+			if (auto msg = ReadMessage(); msg.IsErr() && msg.Err() == Error::NoData)
 			{
 				std::this_thread::yield();
 				continue;
@@ -61,7 +61,7 @@ namespace Strawberry::Net::Websocket
 	}
 
 
-	template <Core::IO::ReadWrite S>
+	template <typename S>
 	std::string ClientBase<S>::GenerateNonce()
 	{
 		std::random_device    randomDevice;
@@ -81,7 +81,7 @@ namespace Strawberry::Net::Websocket
 	}
 
 
-	template <Core::IO::ReadWrite S>
+	template <typename S>
 	uint8_t ClientBase<S>::GetOpcodeMask(Message::Opcode opcode)
 	{
 		switch (opcode)
@@ -104,7 +104,7 @@ namespace Strawberry::Net::Websocket
 	}
 
 
-	template <Core::IO::ReadWrite S>
+	template <typename S>
 	Core::Optional<Message::Opcode> ClientBase<S>::GetOpcodeFromByte(uint8_t byte)
 	{
 		using Opcode = Message::Opcode;
@@ -130,7 +130,7 @@ namespace Strawberry::Net::Websocket
 	}
 
 
-	template <Core::IO::ReadWrite S>
+	template <typename S>
 	uint32_t ClientBase<S>::GenerateMaskingKey()
 	{
 		std::random_device rd;
@@ -143,13 +143,13 @@ namespace Strawberry::Net::Websocket
 	}
 
 
-	template <Core::IO::ReadWrite S>
+	template <typename S>
 	Core::Result<size_t, Error>
 	ClientBase<S>::TransmitFrame(const Message& frame)
 	{
-		if (mError == Error::Closed)
+		if (mError == Error::ConnectionReset)
 		{
-			return Error::Closed;
+			return Error::ConnectionReset;
 		}
 
 		Core::IO::DynamicByteBuffer bytesToSend;
@@ -199,10 +199,10 @@ namespace Strawberry::Net::Websocket
 	}
 
 
-	template <Core::IO::ReadWrite S>
+	template <typename S>
 	Core::Result<Message, Error> ClientBase<S>::ReceiveFrame()
 	{
-		if (mError == Error::Closed)
+		if (mError == Error::ConnectionReset)
 		{
 			return *mError;
 		}
@@ -230,7 +230,7 @@ namespace Strawberry::Net::Websocket
 
 			if (message.GetOpcode() == Message::Opcode::Close)
 			{
-				mError = Error::Closed;
+				mError = Error::ConnectionReset;
 			}
 
 			return std::move(message);
@@ -242,7 +242,7 @@ namespace Strawberry::Net::Websocket
 	}
 
 
-	template <Core::IO::ReadWrite S>
+	template <typename S>
 	Core::Result<typename ClientBase<S>::Fragment, Error>
 	ClientBase<S>::ReceiveFragment()
 	{
@@ -250,7 +250,7 @@ namespace Strawberry::Net::Websocket
 
 		if (!mSocket.Poll())
 		{
-			return Error::NoMessage;
+			return Error::NoData;
 		}
 
 		bool   final;
@@ -273,8 +273,8 @@ namespace Strawberry::Net::Websocket
 		else
 			switch (byte.Err())
 			{
-				case Core::IO::Error::Closed:
-					return Error::Closed;
+				case Error::ConnectionReset:
+					return Error::ConnectionReset;
 				default:
 					Core::Unreachable();
 			}
@@ -316,10 +316,10 @@ namespace Strawberry::Net::Websocket
 	}
 
 
-	template <Core::IO::ReadWrite S>
+	template <typename S>
 	void ClientBase<S>::Disconnect(int code)
 	{
-		if (mError == Error::Closed) return;
+		if (mError == Error::ConnectionReset) return;
 
 		auto endianCode = Core::ToBigEndian<uint16_t>(code);
 		Websocket::Message::Payload payload;
@@ -329,13 +329,13 @@ namespace Strawberry::Net::Websocket
 		while (true)
 		{
 			auto msg = ReadMessage();
-			if (!msg && msg.Err() == Websocket::Error::Closed ||
+			if (!msg && msg.Err() == Error::ConnectionReset ||
 				msg && msg.Unwrap().GetOpcode() == Message::Opcode::Close)
 			{
 				break;
 			}
 		}
 
-		mError = Error::Closed;
+		mError = Error::ConnectionReset;
 	}
 } // namespace Strawberry::Net::Websocket

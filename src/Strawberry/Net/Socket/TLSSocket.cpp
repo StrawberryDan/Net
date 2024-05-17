@@ -128,7 +128,7 @@ namespace Strawberry::Net::Socket
 	}
 
 
-	Core::Result<Core::IO::DynamicByteBuffer, Core::IO::Error> TLSSocket::Read(size_t length)
+	StreamReadResult TLSSocket::Read(size_t length)
 	{
 		auto   buffer    = Core::IO::DynamicByteBuffer::Zeroes(length);
 		size_t bytesRead = 0;
@@ -143,13 +143,13 @@ namespace Strawberry::Net::Socket
 				switch (error)
 				{
 					case SSL_ERROR_ZERO_RETURN:
-						return Core::IO::Error::Closed;
+						return Error::ConnectionReset;
 					case SSL_ERROR_SYSCALL:
 						Core::Logging::Error("SSL read error. Error: {}", strerror(errno));
-						return Core::IO::Error::Unknown;
+						Core::Unreachable();
 					default:
 						Core::Logging::Error("Unknown SSL_read error code: {}", error);
-						return Core::IO::Error::Unknown;
+						Core::Unreachable();
 				}
 			}
 		}
@@ -159,22 +159,29 @@ namespace Strawberry::Net::Socket
 	}
 
 
-	Core::Result<size_t, Core::IO::Error> TLSSocket::Write(const Core::IO::DynamicByteBuffer& bytes)
+	StreamWriteResult TLSSocket::Write(const Core::IO::DynamicByteBuffer& bytes)
 	{
-		auto bytesSent = SSL_write(mSSL, bytes.Data(), static_cast<int>(bytes.Size()));
+		int bytesSent = 0;
 
-		if (bytesSent >= 0)
+		while (bytesSent < bytes.Size())
 		{
-			Core::Assert(bytesSent == bytes.Size());
-			return bytesSent;
-		}
-		else
-		{
-			switch (SSL_get_error(mSSL, bytesSent))
+			auto writeResult = SSL_write(mSSL, bytes.Data() + bytesSent, bytes.Size() - bytesSent);
+
+			if (writeResult <= 0)
 			{
-				default:
-					return Core::IO::Error::Unknown;
+				int error = SSL_get_error(mSSL, writeResult);
+				switch (error)
+				{
+					default:
+						Core::Unreachable();
+				}
+			}
+			else
+			{
+				bytesSent += writeResult;
 			}
 		}
+
+		return bytesSent;
 	}
 } // namespace Strawberry::Net::Socket
