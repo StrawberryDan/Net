@@ -133,6 +133,34 @@ namespace Strawberry::Net::Socket
 		auto   buffer    = Core::IO::DynamicByteBuffer::Zeroes(length);
 		size_t bytesRead = 0;
 
+		auto thisRead = SSL_read(mSSL, reinterpret_cast<void*>(buffer.Data() + bytesRead), static_cast<int>(length - bytesRead));
+		if (thisRead > 0) { bytesRead += thisRead; }
+		else
+		{
+			auto error = SSL_get_error(mSSL, bytesRead);
+			switch (error)
+			{
+				case SSL_ERROR_ZERO_RETURN:
+					return Error::ConnectionReset;
+				case SSL_ERROR_SYSCALL:
+					Core::Logging::Error("SSL read error. Error: {}", strerror(errno));
+					Core::Unreachable();
+				default:
+					Core::Logging::Error("Unknown SSL_read error code: {}", error);
+					Core::Unreachable();
+			}
+		}
+
+		buffer.Resize(bytesRead);
+		return buffer;
+	}
+
+
+	StreamReadResult TLSSocket::ReadAll(size_t length)
+	{
+		auto   buffer    = Core::IO::DynamicByteBuffer::Zeroes(length);
+		size_t bytesRead = 0;
+
 		while (bytesRead < length)
 		{
 			auto thisRead = SSL_read(mSSL, reinterpret_cast<void*>(buffer.Data() + bytesRead), static_cast<int>(length - bytesRead));

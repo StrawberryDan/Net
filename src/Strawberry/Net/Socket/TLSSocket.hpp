@@ -35,6 +35,7 @@ namespace Strawberry::Net::Socket
 
 		[[nodiscard]] bool Poll() const;
 		StreamReadResult   Read(size_t length);
+		StreamReadResult   ReadAll(size_t length);
 		StreamWriteResult  Write(const Core::IO::DynamicByteBuffer& bytes);
 
 
