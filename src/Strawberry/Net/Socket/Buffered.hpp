@@ -63,7 +63,7 @@ namespace Strawberry::Net::Socket
 		}
 		else
 		{
-			return false;
+			return true;
 		}
 	}
 
@@ -75,12 +75,12 @@ namespace Strawberry::Net::Socket
 
 		while (bytes.Size() < size)
 		{
-			while (!mBuffer.Empty())
+			while (!mBuffer.Empty() && bytes.Size() < size)
 			{
 				bytes.Push(mBuffer.Pop().Unwrap());
 			}
 
-			RefillBuffer().Unwrap();
+			Core::Assert(!RefillBuffer().HasValue());
 
 			if (mBuffer.Empty())
 			{
@@ -99,12 +99,12 @@ namespace Strawberry::Net::Socket
 
 		while (bytes.Size() < size)
 		{
-			while (!mBuffer.Empty())
+			while (!mBuffer.Empty() && bytes.Size() < size)
 			{
 				bytes.Push(mBuffer.Pop().Unwrap());
 			}
 
-			RefillBuffer().Unwrap();
+			Core::Assert(!RefillBuffer().HasValue());
 
 			if (mBuffer.Empty())
 			{
@@ -147,16 +147,14 @@ namespace Strawberry::Net::Socket
 	template<typename S>
 	Core::Optional<Error> Buffered<S>::RefillBuffer()
 	{
-		size_t spaceAvailable = BufferSpaceAvailable();
-
 		if (!mSocket.Poll())
 		{
 			return Core::NullOpt;
 		}
 
-		if (spaceAvailable > 0)
+		if (BufferSpaceAvailable() > 0)
 		{
-			if (auto readResult = mSocket.Read(spaceAvailable))
+			if (auto readResult = mSocket.Read(BufferSpaceAvailable()))
 			{
 				for (auto byte : readResult.Unwrap())
 				{
