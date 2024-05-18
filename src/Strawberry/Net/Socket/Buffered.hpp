@@ -80,7 +80,17 @@ namespace Strawberry::Net::Socket
 				bytes.Push(mBuffer.Pop().Unwrap());
 			}
 
-			Core::Assert(!RefillBuffer().HasValue());
+			auto refillError = RefillBuffer();
+			if (refillError)
+			{
+				switch (refillError.Value())
+				{
+					case Error::ConnectionReset:
+						return refillError.Value();
+					default:
+						Core::Unreachable();
+				}
+			}
 
 			if (mBuffer.Empty())
 			{
