@@ -7,7 +7,6 @@
 #include "Strawberry/Net/Error.hpp"
 #include "Strawberry/Net/Socket/Buffered.hpp"
 // Strawberry Core
-#include "Strawberry/Core/IO/Concepts.hpp"
 #include "Strawberry/Net/Socket/TCPSocket.hpp"
 #include "Strawberry/Net/Socket/TLSSocket.hpp"
 #include "Strawberry/Net/Websocket/Message.hpp"
@@ -29,7 +28,7 @@ namespace Strawberry::Net::Websocket
 	class ClientBase
 	{
 	public:
-		static constexpr size_t SOCKET_BUFFER_SIZE = 2<15;
+		static constexpr size_t SOCKET_BUFFER_SIZE = 1 << 15;
 
 
 	public:
@@ -98,7 +97,7 @@ namespace Strawberry::Net::Websocket
 
 
 	protected:
-		Socket::Buffered<S> mSocket;
+		Core::Optional<Socket::Buffered<S>> mSocket;
 		Core::Optional<Error>   mError;
 	};
 

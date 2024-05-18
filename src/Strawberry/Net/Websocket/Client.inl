@@ -6,7 +6,6 @@
 
 
 #include "Strawberry/Core/IO/Base64.hpp"
-#include "Strawberry/Core/IO/Concepts.hpp"
 #include "Strawberry/Net/HTTP/Client.hpp"
 #include "Strawberry/Core/IO/Endian.hpp"
 #include "Strawberry/Core/Markers.hpp"
@@ -17,7 +16,10 @@ namespace Strawberry::Net::Websocket
 	template <typename S>
 	ClientBase<S>::~ClientBase()
 	{
-		Disconnect();
+		if (mSocket)
+		{
+			Disconnect();
+		}
 	}
 
 
@@ -185,7 +187,7 @@ namespace Strawberry::Net::Websocket
 			bytesToSend.Push<uint8_t>(bytes[i] ^ mask);
 		}
 
-		auto sendResult = mSocket.Write(bytesToSend);
+		auto sendResult = mSocket->Write(bytesToSend);
 		if (sendResult)
 		{
 			return sendResult.Unwrap();
@@ -248,14 +250,14 @@ namespace Strawberry::Net::Websocket
 	{
 		using Opcode = Message::Opcode;
 
-		if (!mSocket.Poll())
+		if (!mSocket->Poll())
 		{
 			return Error::NoData;
 		}
 
 		bool   final;
 		Opcode opcode;
-		if (auto byte = mSocket.Read(1).template Map([](auto x) -> uint8_t { return x.template Into<uint8_t>(); }))
+		if (auto byte = mSocket->Read(1).template Map([](auto x) -> uint8_t { return x.template Into<uint8_t>(); }))
 		{
 			final         = *byte & 0b10000000;
 			auto opcodeIn = GetOpcodeFromByte(*byte & 0b00001111);
@@ -281,18 +283,18 @@ namespace Strawberry::Net::Websocket
 
 		bool   masked;
 		size_t size;
-		if (auto byte = mSocket.Read(1).template Map([](auto x) { return x.template Into<uint8_t>(); }))
+		if (auto byte = mSocket->Read(1).template Map([](auto x) { return x.template Into<uint8_t>(); }))
 		{
 			masked = *byte & 0b10000000;
 			Core::Assert(!masked);
 			uint8_t sizeByte = *byte & 0b01111111;
 			if (sizeByte == 126)
 			{
-				size = Core::FromBigEndian(mSocket.Read(sizeof(uint16_t)).Unwrap().template Into<uint16_t>());
+				size = Core::FromBigEndian(mSocket->Read(sizeof(uint16_t)).Unwrap().template Into<uint16_t>());
 			}
 			else if (sizeByte == 127)
 			{
-				size = Core::FromBigEndian(mSocket.Read(sizeof(uint64_t)).Unwrap().template Into<uint64_t>());
+				size = Core::FromBigEndian(mSocket->Read(sizeof(uint64_t)).Unwrap().template Into<uint64_t>());
 			}
 			else
 			{
@@ -308,7 +310,7 @@ namespace Strawberry::Net::Websocket
 		std::vector<uint8_t> payload;
 		if (size > 0)
 		{
-			payload = mSocket.Read(size).Unwrap().AsVector();
+			payload = mSocket->ReadAll(size).Unwrap().AsVector();
 		}
 
 		Core::Assert(payload.size() == size);
@@ -344,6 +346,6 @@ namespace Strawberry::Net::Websocket
 	ClientBase<S>::ClientBase(Socket::Buffered<S> socket)
 		: mSocket(std::move(socket))
 	{
-		mSocket.Resize(SOCKET_BUFFER_SIZE);
+		mSocket->Resize(SOCKET_BUFFER_SIZE);
 	}
 } // namespace Strawberry::Net::Websocket
