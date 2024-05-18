@@ -15,7 +15,7 @@ namespace Strawberry::Net::HTTP
 	class ClientBase
 	{
 	public:
-		static constexpr size_t SOCKET_BUFFER_SIZE = 1 << 15;
+		static constexpr size_t SOCKET_BUFFER_SIZE = 1024 * 1024 * 1;
 
 
 	public:
