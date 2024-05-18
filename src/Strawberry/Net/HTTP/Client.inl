@@ -162,7 +162,7 @@ namespace Strawberry::Net::HTTP
 		std::string line;
 		while (!line.ends_with("\r\n"))
 		{
-			line += mSocket.Read(1).Unwrap().template Into<char>();
+			line += mSocket.ReadAll(1).Unwrap().template Into<char>();
 		}
 		return line;
 	}
