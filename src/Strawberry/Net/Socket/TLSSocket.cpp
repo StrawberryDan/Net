@@ -200,6 +200,9 @@ namespace Strawberry::Net::Socket
 				int error = SSL_get_error(mSSL, writeResult);
 				switch (error)
 				{
+					case SSL_ERROR_SYSCALL:
+						Core::Logging::Error("SSL read error. Error: {}", strerror(errno));
+						Core::Unreachable();
 					case SSL_ERROR_ZERO_RETURN:
 						return Error::ConnectionReset;
 					default:
