@@ -193,11 +193,9 @@ namespace Strawberry::Net::Websocket
 			return sendResult.Unwrap();
 		}
 		else
-			switch (sendResult.Err())
-			{
-				default:
-					Core::Unreachable();
-			}
+		{
+			return sendResult.Err();
+		}
 	}
 
 
