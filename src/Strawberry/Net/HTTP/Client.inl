@@ -138,7 +138,7 @@ namespace Strawberry::Net::HTTP
 				Core::IO::DynamicByteBuffer chunk;
 				chunk.Reserve(bytesToRead);
 
-				chunk.Push(this->mSocket.Read(bytesToRead).Unwrap());
+				chunk.Push(this->mSocket.ReadAll(bytesToRead).Unwrap());
 				sumOfChunkLengths += chunk.Size();
 				Core::Assert(chunk.Size() == bytesToRead);
 				payload.Push(chunk);
