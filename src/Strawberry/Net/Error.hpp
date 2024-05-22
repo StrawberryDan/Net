@@ -17,5 +17,7 @@ namespace Strawberry::Net
 		NoData,
 		ProtocolError,
 		Refused,
+		OpenSSL,
+		System,
 	};
 }

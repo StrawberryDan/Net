@@ -8,6 +8,7 @@
 // System
 #include <memory>
 #include <openssl/tls1.h>
+#include <openssl/err.h>
 
 
 #if STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
@@ -143,8 +144,9 @@ namespace Strawberry::Net::Socket
 				case SSL_ERROR_ZERO_RETURN:
 					return Error::ConnectionReset;
 				case SSL_ERROR_SYSCALL:
-					Core::Logging::Error("SSL read error. Error: {}", strerror(errno));
-					Core::Unreachable();
+					return Error::System;
+				case SSL_ERROR_SSL:
+					return Error::OpenSSL;
 				default:
 					Core::Logging::Error("Unknown SSL_read error code: {}", error);
 					Core::Unreachable();
@@ -173,8 +175,9 @@ namespace Strawberry::Net::Socket
 					case SSL_ERROR_ZERO_RETURN:
 						return Error::ConnectionReset;
 					case SSL_ERROR_SYSCALL:
-						Core::Logging::Error("SSL read error. Error: {}", strerror(errno));
-						Core::Unreachable();
+						return Error::System;
+					case SSL_ERROR_SSL:
+						return Error::OpenSSL;
 					default:
 						Core::Logging::Error("Unknown SSL_read error code: {}", error);
 						Core::Unreachable();
@@ -200,9 +203,10 @@ namespace Strawberry::Net::Socket
 				int error = SSL_get_error(mSSL, writeResult);
 				switch (error)
 				{
+					case SSL_ERROR_SSL:
+						return Error::OpenSSL;
 					case SSL_ERROR_SYSCALL:
-						Core::Logging::Error("SSL read error. Error: {}", strerror(errno));
-						Core::Unreachable();
+						return Error::System;
 					case SSL_ERROR_ZERO_RETURN:
 						return Error::ConnectionReset;
 					default:

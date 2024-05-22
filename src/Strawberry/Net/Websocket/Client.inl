@@ -224,7 +224,7 @@ namespace Strawberry::Net::Websocket
 				}
 				else
 				{
-					return Core::Result<Message, Error>::Err(fragResultB.Err());
+					return fragResultB.Err();
 				}
 			}
 
@@ -271,13 +271,9 @@ namespace Strawberry::Net::Websocket
 			}
 		}
 		else
-			switch (byte.Err())
-			{
-				case Error::ConnectionReset:
-					return Error::ConnectionReset;
-				default:
-					Core::Unreachable();
-			}
+		{
+			return byte.Err();
+		}
 
 		bool   masked;
 		size_t size;
@@ -301,14 +297,16 @@ namespace Strawberry::Net::Websocket
 		}
 		else
 		{
-			Core::Unreachable();
+			return byte.Err();
 		}
 
 
 		std::vector<uint8_t> payload;
 		if (size > 0)
 		{
-			payload = mSocket->ReadAll(size).Unwrap().AsVector();
+			auto payloadRead = mSocket->ReadAll(size);
+			if (payloadRead.IsErr()) return payloadRead.Err();
+			payload = payloadRead.Unwrap().AsVector();
 		}
 
 		Core::Assert(payload.size() == size);
