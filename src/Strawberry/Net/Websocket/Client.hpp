@@ -30,7 +30,6 @@ namespace Strawberry::Net::Websocket
 	public:
 		static constexpr size_t SOCKET_BUFFER_SIZE = 1024 * 1024 * 1;
 
-
 	public:
 		//======================================================================================================================
 		//  Contruction/Destruction
@@ -41,8 +40,9 @@ namespace Strawberry::Net::Websocket
 
 		ClientBase(ClientBase&& rhs) noexcept
 			: mSocket(std::move(rhs.mSocket))
-			, mError(std::move(rhs.mError))
-		{}
+			  , mError(std::move(rhs.mError))
+		{
+		}
 
 
 		ClientBase& operator=(ClientBase&& rhs) noexcept
@@ -56,7 +56,12 @@ namespace Strawberry::Net::Websocket
 			return *this;
 		}
 
+
 		~ClientBase();
+
+
+		[[nodiscard]] Endpoint GetEndpoint() const;
+
 
 		//======================================================================================================================
 		//  Sending/Receiving Methods
@@ -67,10 +72,8 @@ namespace Strawberry::Net::Websocket
 
 		Core::Result<Message, Error> WaitMessage();
 
-
 	protected:
 		using Fragment = std::pair<bool, Message>;
-
 
 	protected:
 		//======================================================================================================================
@@ -91,24 +94,21 @@ namespace Strawberry::Net::Websocket
 
 		void Disconnect(int code = 1000);
 
-
 	protected:
 		ClientBase(Socket::BufferedSocket<S> socket);
 
-
 	protected:
-		Core::Optional<Socket::BufferedSocket<S>> mSocket;
-		Core::Optional<Error>   mError;
+		Core::Optional<Socket::BufferedSocket<S> > mSocket;
+		Core::Optional<Error> mError;
 	};
 
 
 	class WSClient
-		: public ClientBase<Socket::TCPSocket>
+			: public ClientBase<Socket::TCPSocket>
 	{
 	public:
 		static Core::Result<WSClient, Error>
 		Connect(const Endpoint& endpoint, const std::string& resource);
-
 
 	protected:
 		WSClient(Socket::BufferedSocket<Socket::TCPSocket> socket);
@@ -116,12 +116,11 @@ namespace Strawberry::Net::Websocket
 
 
 	class WSSClient
-		: public ClientBase<Socket::TLSSocket>
+			: public ClientBase<Socket::TLSSocket>
 	{
 	public:
 		static Core::Result<WSSClient, Error>
 		Connect(const Endpoint& endpoint, const std::string& resource);
-
 
 	protected:
 		WSSClient(Socket::BufferedSocket<Socket::TLSSocket> socket);

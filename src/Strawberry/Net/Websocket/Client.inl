@@ -24,6 +24,13 @@ namespace Strawberry::Net::Websocket
 
 
 	template <typename S>
+	Endpoint ClientBase<S>::GetEndpoint() const
+	{
+		return mSocket.Value().GetEndpoint();
+	}
+
+
+	template <typename S>
 	Core::Result<Core::NullType, Error> ClientBase<S>::SendMessage(const Message& message)
 	{
 		auto result = TransmitFrame(message);
