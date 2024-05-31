@@ -133,11 +133,11 @@ namespace Strawberry::Net::Socket
         sockaddr_storage peer{};
         socklen_t        peerLen   = 0;
         auto             bytesRead = recvfrom(mSocket,
-                                              reinterpret_cast<char*>(mBuffer.Data()),
-                                              mBuffer.Size(),
-                                              0,
-                                              reinterpret_cast<sockaddr*>(&peer),
-                                              &peerLen);
+                                  reinterpret_cast<char*>(mBuffer.Data()),
+                                  mBuffer.Size(),
+                                  0,
+                                  reinterpret_cast<sockaddr*>(&peer),
+                                  &peerLen);
 
         if (bytesRead >= 0)
         {
@@ -169,7 +169,7 @@ namespace Strawberry::Net::Socket
     }
 
 
-    Core::Result<size_t, Core::IO::Error> UDPSocket::Send(const Endpoint& endpoint, const Core::IO::DynamicByteBuffer& bytes) const
+    Core::Result<void, Core::IO::Error> UDPSocket::Send(const Endpoint& endpoint, const Core::IO::DynamicByteBuffer& bytes) const
     {
         addrinfo  hints{.ai_flags = AI_ADDRCONFIG, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
         addrinfo* peer   = nullptr;
@@ -190,6 +190,6 @@ namespace Strawberry::Net::Socket
 
         freeaddrinfo(peer);
         Core::AssertEQ(bytesSent, bytes.Size());
-        return bytes.Size();
+        return {};
     }
 } // namespace Strawberry::Net::Socket

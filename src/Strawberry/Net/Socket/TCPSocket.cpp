@@ -191,6 +191,6 @@ namespace Strawberry::Net::Socket
         }
 
         Core::Assert(bytesSent == bytes.Size());
-        return bytesSent;
+        return {};
     }
 } // namespace Strawberry::Net::Socket

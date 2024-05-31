@@ -220,6 +220,6 @@ namespace Strawberry::Net::Socket
             }
         }
 
-        return bytesSent;
+        return {};
     }
 } // namespace Strawberry::Net::Socket

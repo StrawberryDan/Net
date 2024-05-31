@@ -39,8 +39,7 @@ namespace Strawberry::Net::Websocket
 
 
             ClientBase(ClientBase&& rhs) noexcept
-                : mSocket(std::move(rhs.mSocket))
-                , mError(std::move(rhs.mError)) {}
+                : mSocket(std::move(rhs.mSocket)) {}
 
 
             ClientBase& operator=(ClientBase&& rhs) noexcept
@@ -64,7 +63,7 @@ namespace Strawberry::Net::Websocket
             //======================================================================================================================
             //  Sending/Receiving Methods
             //----------------------------------------------------------------------------------------------------------------------
-            Core::Result<Core::NullType, Error> SendMessage(const Message& message);
+            Core::Result<void, Error> SendMessage(const Message& message);
 
             Core::Result<Message, Error> ReadMessage();
 
@@ -73,7 +72,6 @@ namespace Strawberry::Net::Websocket
         protected:
             using Fragment = std::pair<bool, Message>;
 
-        protected:
             //======================================================================================================================
             //  Implementation IO
             //----------------------------------------------------------------------------------------------------------------------
@@ -82,7 +80,7 @@ namespace Strawberry::Net::Websocket
             // Receives a single Websocket Fragment. This may return only parts of a whole websocket frame.
             [[nodiscard]] Core::Result<Fragment, Error> ReceiveFragment();
             // Sends
-            [[nodiscard]] Core::Result<size_t, Error> TransmitFrame(const Message& frame);
+            [[nodiscard]] Core::Result<void, Error> TransmitFrame(const Message& frame);
 
 
             [[nodiscard]] static std::string                     GenerateNonce();
@@ -92,12 +90,9 @@ namespace Strawberry::Net::Websocket
 
             void Disconnect(int code = 1000);
 
-        protected:
             ClientBase(Socket::BufferedSocket<S> socket);
 
-        protected:
             Core::Optional<Socket::BufferedSocket<S> > mSocket;
-            Core::Optional<Error>                      mError;
     };
 
 

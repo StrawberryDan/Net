@@ -31,17 +31,9 @@ namespace Strawberry::Net::Websocket
 
 
     template<typename S>
-    Core::Result<Core::NullType, Error> ClientBase<S>::SendMessage(const Message& message)
+    Core::Result<void, Error> ClientBase<S>::SendMessage(const Message& message)
     {
-        auto result = TransmitFrame(message);
-        if (!result)
-        {
-            return result.Err();
-        }
-        else
-        {
-            return Core::NullType();
-        }
+        return TransmitFrame(message);
     }
 
 
@@ -139,13 +131,8 @@ namespace Strawberry::Net::Websocket
 
 
     template<typename S>
-    Core::Result<size_t, Error> ClientBase<S>::TransmitFrame(const Message& frame)
+    Core::Result<void, Error> ClientBase<S>::TransmitFrame(const Message& frame)
     {
-        if (mError == Error::ConnectionReset)
-        {
-            return Error::ConnectionReset;
-        }
-
         Core::IO::DynamicByteBuffer bytesToSend;
 
         uint8_t byte = 0b10000000 | GetOpcodeMask(frame.GetOpcode());
@@ -179,26 +166,13 @@ namespace Strawberry::Net::Websocket
             bytesToSend.Push<uint8_t>(bytes[i] ^ mask);
         }
 
-        auto sendResult = mSocket->Write(bytesToSend);
-        if (sendResult)
-        {
-            return sendResult.Unwrap();
-        }
-        else
-        {
-            return sendResult.Err();
-        }
+        return mSocket->Write(bytesToSend);
     }
 
 
     template<typename S>
     Core::Result<Message, Error> ClientBase<S>::ReceiveFrame()
     {
-        if (mError == Error::ConnectionReset)
-        {
-            return *mError;
-        }
-
         auto fragResult = ReceiveFragment();
 
         if (fragResult)
@@ -222,7 +196,7 @@ namespace Strawberry::Net::Websocket
 
             if (message.GetOpcode() == Message::Opcode::Close)
             {
-                mError = Error::ConnectionReset;
+                return Error::ConnectionReset;
             }
 
             return std::move(message);
@@ -314,13 +288,18 @@ namespace Strawberry::Net::Websocket
     template<typename S>
     void ClientBase<S>::Disconnect(int code)
     {
-        if (mError == Error::ConnectionReset) return;
+        Core::Assert(mSocket.HasValue());
 
         auto                        endianCode = Core::ToBigEndian<uint16_t>(code);
         Websocket::Message::Payload payload;
         payload.push_back(reinterpret_cast<uint8_t*>(&endianCode)[0]);
         payload.push_back(reinterpret_cast<uint8_t*>(&endianCode)[1]);
-        SendMessage(Message(Message::Opcode::Close, payload)).Unwrap();
+        auto sendResult = SendMessage(Message(Message::Opcode::Close, payload));
+        if (sendResult == Error::ConnectionReset)
+        {
+            return;
+        }
+
         while (true)
         {
             auto msg = ReadMessage();
@@ -330,8 +309,6 @@ namespace Strawberry::Net::Websocket
                 break;
             }
         }
-
-        mError = Error::ConnectionReset;
     }
 
 

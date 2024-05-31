@@ -14,5 +14,5 @@
 namespace Strawberry::Net::Socket
 {
     using StreamReadResult  = Core::Result<Core::IO::DynamicByteBuffer, Error>;
-    using StreamWriteResult = Core::Result<std::size_t, Error>;
+    using StreamWriteResult = Core::Result<void, Error>;
 }
