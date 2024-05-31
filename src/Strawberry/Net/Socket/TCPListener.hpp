@@ -18,36 +18,33 @@
 //----------------------------------------------------------------------------------------------------------------------
 namespace Strawberry::Net::Socket
 {
-	class TCPListener
-	{
-	private:
+    class TCPListener
+    {
+        private:
 #if STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
 		using SocketHandle = int;
 #elif STRAWBERRY_TARGET_WINDOWS
-		using SocketHandle = SOCKET;
+            using SocketHandle = SOCKET;
 #endif
 
-
-	public:
-		static Core::Result<TCPListener, Error> Bind(const Endpoint& endpoint);
-
-
-		TCPListener(const TCPListener&) = delete;
-		TCPListener& operator=(const TCPListener&) = delete;
-		TCPListener(TCPListener&& other);
-		TCPListener& operator=(TCPListener&& other) noexcept;
-		~TCPListener();
+        public:
+            static Core::Result<TCPListener, Error> Bind(const Endpoint& endpoint);
 
 
-		Core::Optional<TCPSocket> Accept() const noexcept;
+            TCPListener(const TCPListener&)            = delete;
+            TCPListener& operator=(const TCPListener&) = delete;
+            TCPListener(TCPListener&& other);
+            TCPListener& operator=(TCPListener&& other) noexcept;
+            ~TCPListener();
 
 
-	private:
-		TCPListener();
+            Core::Optional<TCPSocket> Accept() const noexcept;
 
+        private:
+            TCPListener();
 
-	private:
-		SocketHandle mSocket;
-		Endpoint mEndpoint;
-	};
+        private:
+            SocketHandle mSocket;
+            Endpoint     mEndpoint;
+    };
 }

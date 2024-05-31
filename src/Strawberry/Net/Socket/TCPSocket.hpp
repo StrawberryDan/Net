@@ -20,42 +20,38 @@
 
 namespace Strawberry::Net::Socket
 {
-	class TCPSocket
-	{
-		friend class TLSSocket;
-		friend class TCPListener;
+    class TCPSocket
+    {
+        friend class TLSSocket;
+        friend class TCPListener;
 
-
-	private:
+        private:
 #if STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
 		using SocketHandle = int;
 #elif STRAWBERRY_TARGET_WINDOWS
-		using SocketHandle = SOCKET;
+            using SocketHandle = SOCKET;
 #endif
 
+        public:
+            static Core::Result<TCPSocket, Error> Connect(const Endpoint& endpoint);
 
-	public:
-		static Core::Result<TCPSocket, Error> Connect(const Endpoint& endpoint);
-
-
-	public:
-		TCPSocket();
-		TCPSocket(const TCPSocket& other) = delete;
-		TCPSocket(TCPSocket&& other) noexcept;
-		TCPSocket& operator=(const TCPSocket& other) = delete;
-		TCPSocket& operator=(TCPSocket&& other) noexcept;
-		~TCPSocket();
+        public:
+            TCPSocket();
+            TCPSocket(const TCPSocket& other) = delete;
+            TCPSocket(TCPSocket&& other) noexcept;
+            TCPSocket& operator=(const TCPSocket& other) = delete;
+            TCPSocket& operator=(TCPSocket&& other) noexcept;
+            ~TCPSocket();
 
 
-		const Endpoint&    GetEndpoint() const noexcept;
-		[[nodiscard]] bool Poll() const;
-		StreamReadResult   Read(size_t length);
-		StreamReadResult   ReadAll(size_t length);
-		StreamWriteResult  Write(const Core::IO::DynamicByteBuffer& bytes);
+            const Endpoint&    GetEndpoint() const noexcept;
+            [[nodiscard]] bool Poll() const;
+            StreamReadResult   Read(size_t length);
+            StreamReadResult   ReadAll(size_t length);
+            StreamWriteResult  Write(const Core::IO::DynamicByteBuffer& bytes);
 
-
-	private:
-		SocketHandle mSocket;
-		Endpoint     mEndpoint;
-	};
+        private:
+            SocketHandle mSocket;
+            Endpoint     mEndpoint;
+    };
 } // namespace Strawberry::Net::Socket

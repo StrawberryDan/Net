@@ -7,57 +7,63 @@
 
 namespace Strawberry::Net::HTTP
 {
-	class Verb
-	{
-	public:
-		enum _Enum
-		{
-			POST,
-			GET,
-			PUT,
-			PATCH,
-			DEL,
-		};
+    class Verb
+    {
+        public:
+            enum _Enum
+            {
+                POST,
+                GET,
+                PUT,
+                PATCH,
+                DEL,
+            };
 
-	public:
-		inline Verb(_Enum value)
-			: mValue(value)
-		{}
-
-
-		operator _Enum() const { return mValue; }
-
-		static Core::Optional<Verb>     Parse(const std::string& string);
-		[[nodiscard]] std::string ToString() const;
-
-	private:
-		_Enum mValue;
-	};
+        public:
+            inline Verb(_Enum value)
+                : mValue(value) {}
 
 
-	class Version
-	{
-	public:
-		enum _Enum
-		{
-			VERSION_1_0,
-			VERSION_1_1,
-			VERSION_2,
-			VERSION_3
-		};
-
-	public:
-		inline Version(_Enum value)
-			: mValue(value)
-		{}
+            operator _Enum() const
+            {
+                return mValue;
+            }
 
 
-		inline operator _Enum() const { return mValue; }
+            static Core::Optional<Verb> Parse(const std::string& string);
+            [[nodiscard]] std::string   ToString() const;
 
-		static Core::Optional<Version>  Parse(const std::string& string);
-		[[nodiscard]] std::string ToString() const;
+        private:
+            _Enum mValue;
+    };
 
-	private:
-		_Enum mValue;
-	};
+
+    class Version
+    {
+        public:
+            enum _Enum
+            {
+                VERSION_1_0,
+                VERSION_1_1,
+                VERSION_2,
+                VERSION_3
+            };
+
+        public:
+            inline Version(_Enum value)
+                : mValue(value) {}
+
+
+            inline operator _Enum() const
+            {
+                return mValue;
+            }
+
+
+            static Core::Optional<Version> Parse(const std::string& string);
+            [[nodiscard]] std::string      ToString() const;
+
+        private:
+            _Enum mValue;
+    };
 } // namespace Strawberry::Net::HTTP

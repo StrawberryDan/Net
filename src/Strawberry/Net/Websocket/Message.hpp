@@ -13,46 +13,51 @@
 
 namespace Strawberry::Net::Websocket
 {
-	class Message
-	{
-	public:
-		enum class Opcode;
-		using Payload = std::vector<uint8_t>;
+    class Message
+    {
+        public:
+            enum class Opcode;
+            using Payload = std::vector<uint8_t>;
 
-	public:
-		explicit Message(Opcode opcode, Payload payload = {});
-		explicit Message(const std::string& string);
-		explicit Message(const nlohmann::json& json);
-		explicit Message(std::vector<uint8_t> bytes);
-
-
-		[[nodiscard]] inline Opcode GetOpcode() const { return mOpcode; }
+        public:
+            explicit Message(Opcode opcode, Payload payload = {});
+            explicit Message(const std::string& string);
+            explicit Message(const nlohmann::json& json);
+            explicit Message(std::vector<uint8_t> bytes);
 
 
-		[[nodiscard]] inline std::vector<uint8_t> AsBytes() const { return mPayload; }
+            [[nodiscard]] inline Opcode GetOpcode() const
+            {
+                return mOpcode;
+            }
 
 
-		[[nodiscard]] std::string                         AsString() const;
-		[[nodiscard]] Core::Result<nlohmann::json, std::string> AsJSON() const;
-		[[nodiscard]] uint16_t                            GetCloseStatusCode() const;
+            [[nodiscard]] inline std::vector<uint8_t> AsBytes() const
+            {
+                return mPayload;
+            }
 
 
-		void Append(const Message& other);
+            [[nodiscard]] std::string                               AsString() const;
+            [[nodiscard]] Core::Result<nlohmann::json, std::string> AsJSON() const;
+            [[nodiscard]] uint16_t                                  GetCloseStatusCode() const;
 
 
-	private:
-		Opcode  mOpcode;
-		Payload mPayload;
-	};
+            void Append(const Message& other);
+
+        private:
+            Opcode  mOpcode;
+            Payload mPayload;
+    };
 
 
-	enum class Message::Opcode
-	{
-		Continuation,
-		Text,
-		Binary,
-		Close,
-		Ping,
-		Pong,
-	};
+    enum class Message::Opcode
+    {
+        Continuation,
+        Text,
+        Binary,
+        Close,
+        Ping,
+        Pong,
+    };
 } // namespace Strawberry::Net::Websocket

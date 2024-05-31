@@ -24,107 +24,103 @@
 
 namespace Strawberry::Net::Websocket
 {
-	template<typename S>
-	class ClientBase
-	{
-	public:
-		static constexpr size_t SOCKET_BUFFER_SIZE = 1024 * 1024 * 1;
+    template<typename S>
+    class ClientBase
+    {
+        public:
+            static constexpr size_t SOCKET_BUFFER_SIZE = 1024 * 1024 * 1;
 
-	public:
-		//======================================================================================================================
-		//  Contruction/Destruction
-		//----------------------------------------------------------------------------------------------------------------------
-		ClientBase(const ClientBase&) = delete;
-		ClientBase& operator=(const ClientBase&) = delete;
-
-
-		ClientBase(ClientBase&& rhs) noexcept
-			: mSocket(std::move(rhs.mSocket))
-			  , mError(std::move(rhs.mError))
-		{
-		}
+        public:
+            //======================================================================================================================
+            //  Contruction/Destruction
+            //----------------------------------------------------------------------------------------------------------------------
+            ClientBase(const ClientBase&)            = delete;
+            ClientBase& operator=(const ClientBase&) = delete;
 
 
-		ClientBase& operator=(ClientBase&& rhs) noexcept
-		{
-			if (this != &rhs)
-			{
-				std::destroy_at(this);
-				std::construct_at(this, std::move(rhs));
-			}
-
-			return *this;
-		}
+            ClientBase(ClientBase&& rhs) noexcept
+                : mSocket(std::move(rhs.mSocket))
+                , mError(std::move(rhs.mError)) {}
 
 
-		~ClientBase();
+            ClientBase& operator=(ClientBase&& rhs) noexcept
+            {
+                if (this != &rhs)
+                {
+                    std::destroy_at(this);
+                    std::construct_at(this, std::move(rhs));
+                }
+
+                return *this;
+            }
 
 
-		[[nodiscard]] Endpoint GetEndpoint() const;
+            ~ClientBase();
 
 
-		//======================================================================================================================
-		//  Sending/Receiving Methods
-		//----------------------------------------------------------------------------------------------------------------------
-		Core::Result<Core::NullType, Error> SendMessage(const Message& message);
-
-		Core::Result<Message, Error> ReadMessage();
-
-		Core::Result<Message, Error> WaitMessage();
-
-	protected:
-		using Fragment = std::pair<bool, Message>;
-
-	protected:
-		//======================================================================================================================
-		//  Implementation IO
-		//----------------------------------------------------------------------------------------------------------------------
-		// Receives a single Websocket Frame. This will consolidate sequences of broken up fragments.
-		[[nodiscard]] Core::Result<Message, Error> ReceiveFrame();
-		// Receives a single Websocket Fragment. This may return only parts of a whole websocket frame.
-		[[nodiscard]] Core::Result<Fragment, Error> ReceiveFragment();
-		// Sends
-		[[nodiscard]] Core::Result<size_t, Error> TransmitFrame(const Message& frame);
+            [[nodiscard]] Endpoint GetEndpoint() const;
 
 
-		[[nodiscard]] static std::string GenerateNonce();
-		[[nodiscard]] static uint8_t GetOpcodeMask(Message::Opcode opcode);
-		[[nodiscard]] static Core::Optional<Message::Opcode> GetOpcodeFromByte(uint8_t byte);
-		[[nodiscard]] static uint32_t GenerateMaskingKey();
+            //======================================================================================================================
+            //  Sending/Receiving Methods
+            //----------------------------------------------------------------------------------------------------------------------
+            Core::Result<Core::NullType, Error> SendMessage(const Message& message);
 
-		void Disconnect(int code = 1000);
+            Core::Result<Message, Error> ReadMessage();
 
-	protected:
-		ClientBase(Socket::BufferedSocket<S> socket);
+            Core::Result<Message, Error> WaitMessage();
 
-	protected:
-		Core::Optional<Socket::BufferedSocket<S> > mSocket;
-		Core::Optional<Error> mError;
-	};
+        protected:
+            using Fragment = std::pair<bool, Message>;
 
-
-	class WSClient
-			: public ClientBase<Socket::TCPSocket>
-	{
-	public:
-		static Core::Result<WSClient, Error>
-		Connect(const Endpoint& endpoint, const std::string& resource);
-
-	protected:
-		WSClient(Socket::BufferedSocket<Socket::TCPSocket> socket);
-	};
+        protected:
+            //======================================================================================================================
+            //  Implementation IO
+            //----------------------------------------------------------------------------------------------------------------------
+            // Receives a single Websocket Frame. This will consolidate sequences of broken up fragments.
+            [[nodiscard]] Core::Result<Message, Error> ReceiveFrame();
+            // Receives a single Websocket Fragment. This may return only parts of a whole websocket frame.
+            [[nodiscard]] Core::Result<Fragment, Error> ReceiveFragment();
+            // Sends
+            [[nodiscard]] Core::Result<size_t, Error> TransmitFrame(const Message& frame);
 
 
-	class WSSClient
-			: public ClientBase<Socket::TLSSocket>
-	{
-	public:
-		static Core::Result<WSSClient, Error>
-		Connect(const Endpoint& endpoint, const std::string& resource);
+            [[nodiscard]] static std::string                     GenerateNonce();
+            [[nodiscard]] static uint8_t                         GetOpcodeMask(Message::Opcode opcode);
+            [[nodiscard]] static Core::Optional<Message::Opcode> GetOpcodeFromByte(uint8_t byte);
+            [[nodiscard]] static uint32_t                        GenerateMaskingKey();
 
-	protected:
-		WSSClient(Socket::BufferedSocket<Socket::TLSSocket> socket);
-	};
+            void Disconnect(int code = 1000);
+
+        protected:
+            ClientBase(Socket::BufferedSocket<S> socket);
+
+        protected:
+            Core::Optional<Socket::BufferedSocket<S> > mSocket;
+            Core::Optional<Error>                      mError;
+    };
+
+
+    class WSClient
+            : public ClientBase<Socket::TCPSocket>
+    {
+        public:
+            static Core::Result<WSClient, Error> Connect(const Endpoint& endpoint, const std::string& resource);
+
+        protected:
+            WSClient(Socket::BufferedSocket<Socket::TCPSocket> socket);
+    };
+
+
+    class WSSClient
+            : public ClientBase<Socket::TLSSocket>
+    {
+        public:
+            static Core::Result<WSSClient, Error> Connect(const Endpoint& endpoint, const std::string& resource);
+
+        protected:
+            WSSClient(Socket::BufferedSocket<Socket::TLSSocket> socket);
+    };
 } // namespace Strawberry::Net::Websocket
 
 #include "Client.inl"
