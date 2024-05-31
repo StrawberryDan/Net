@@ -5,7 +5,7 @@
 #include "Response.hpp"
 #include "Strawberry/Net/Socket/TCPSocket.hpp"
 #include "Strawberry/Net/Socket/TLSSocket.hpp"
-#include "Strawberry/Net/Socket/Buffered.hpp"
+#include "Strawberry/Net/Socket/BufferedSocket.hpp"
 #include "Strawberry/Core/Util/Strings.hpp"
 
 
@@ -26,7 +26,7 @@ namespace Strawberry::Net::HTTP
 
 
 		/// Removes and returns the socket of an rvalue HTTP client.
-		inline Socket::Buffered<S> IntoSocket()&& { return std::move(mSocket); }
+		inline Socket::BufferedSocket<S> IntoSocket()&& { return std::move(mSocket); }
 
 
 	protected:
@@ -42,7 +42,7 @@ namespace Strawberry::Net::HTTP
 
 
 	private:
-		Socket::Buffered<S> mSocket;
+		Socket::BufferedSocket<S> mSocket;
 	};
 
 

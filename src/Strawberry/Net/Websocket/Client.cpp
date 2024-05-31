@@ -23,7 +23,7 @@ namespace Strawberry::Net::Websocket
 	}
 
 
-	WSClient::WSClient(Socket::Buffered<Socket::TCPSocket> socket)
+	WSClient::WSClient(Socket::BufferedSocket<Socket::TCPSocket> socket)
 		: ClientBase(std::move(socket))
 	{}
 
@@ -47,7 +47,7 @@ namespace Strawberry::Net::Websocket
 	}
 
 
-	WSSClient::WSSClient(Socket::Buffered<Socket::TLSSocket> socket)
+	WSSClient::WSSClient(Socket::BufferedSocket<Socket::TLSSocket> socket)
 		: ClientBase(std::move(socket))
 	{}
 } // namespace Strawberry::Net::Websocket

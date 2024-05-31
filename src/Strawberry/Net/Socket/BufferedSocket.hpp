@@ -15,10 +15,10 @@
 namespace Strawberry::Net::Socket
 {
 	template <typename S>
-    class Buffered
+    class BufferedSocket
 	{
 	public:
-		Buffered(S socket, size_t bufferSize);
+		BufferedSocket(S socket, size_t bufferSize);
 
 
 		bool              Poll() const;
@@ -48,18 +48,18 @@ namespace Strawberry::Net::Socket
 	};
 
 	template <typename S>
-	Buffered(S, size_t) -> Buffered<S>;
+	BufferedSocket(S, size_t) -> BufferedSocket<S>;
 
 
 	template<typename S>
-	Buffered<S>::Buffered(S socket, size_t bufferSize)
+	BufferedSocket<S>::BufferedSocket(S socket, size_t bufferSize)
 			: mSocket(std::move(socket))
 			, mBuffer(bufferSize)
 	{}
 
 
 	template<typename S>
-	bool Buffered<S>::Poll() const
+	bool BufferedSocket<S>::Poll() const
 	{
 		if (mBuffer.Empty())
 		{
@@ -73,7 +73,7 @@ namespace Strawberry::Net::Socket
 
 
 	template<typename S>
-	StreamReadResult Buffered<S>::Read(size_t size)
+	StreamReadResult BufferedSocket<S>::Read(size_t size)
 	{
 		Core::IO::DynamicByteBuffer bytes = Core::IO::DynamicByteBuffer::WithCapacity(size);
 
@@ -107,7 +107,7 @@ namespace Strawberry::Net::Socket
 
 
 	template<typename S>
-	StreamReadResult Buffered<S>::ReadAll(size_t size)
+	StreamReadResult BufferedSocket<S>::ReadAll(size_t size)
 	{
 		Core::IO::DynamicByteBuffer bytes = Core::IO::DynamicByteBuffer::WithCapacity(size);
 
@@ -131,42 +131,42 @@ namespace Strawberry::Net::Socket
 
 
 	template<typename S>
-	StreamWriteResult Buffered<S>::Write(Core::IO::DynamicByteBuffer bytes)
+	StreamWriteResult BufferedSocket<S>::Write(Core::IO::DynamicByteBuffer bytes)
 	{
 		return mSocket.Write(bytes);
 	}
 
 
 	template<typename S>
-	void Buffered<S>::Resize(size_t newSize)
+	void BufferedSocket<S>::Resize(size_t newSize)
 	{
 		mBuffer.Resize(newSize);
 	}
 
 
 	template<typename S>
-	size_t Buffered<S>::BufferSize() const
+	size_t BufferedSocket<S>::BufferSize() const
 	{
 		return mBuffer.Capacity();
 	}
 
 
 	template<typename S>
-	Endpoint Buffered<S>::GetEndpoint() const
+	Endpoint BufferedSocket<S>::GetEndpoint() const
 	{
 		return mSocket.GetEndpoint();
 	}
 
 
 	template<typename S>
-	S Buffered<S>::TakeSocket()&&
+	S BufferedSocket<S>::TakeSocket()&&
 	{
 		return std::move(mSocket);
 	}
 
 
 	template<typename S>
-	Core::Optional<Error> Buffered<S>::RefillBuffer()
+	Core::Optional<Error> BufferedSocket<S>::RefillBuffer()
 	{
 		if (!mSocket.Poll())
 		{
@@ -193,7 +193,7 @@ namespace Strawberry::Net::Socket
 
 
 	template<typename S>
-	size_t Buffered<S>::BufferSpaceAvailable() const
+	size_t BufferedSocket<S>::BufferSpaceAvailable() const
 	{
 		return mBuffer.Capacity() - mBuffer.Size();
 	}

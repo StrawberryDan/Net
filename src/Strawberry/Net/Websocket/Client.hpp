@@ -5,7 +5,7 @@
 //		Includes
 //----------------------------------------------------------------------------------------------------------------------
 #include "Strawberry/Net/Error.hpp"
-#include "Strawberry/Net/Socket/Buffered.hpp"
+#include "Strawberry/Net/Socket/BufferedSocket.hpp"
 // Strawberry Core
 #include "Strawberry/Net/Socket/TCPSocket.hpp"
 #include "Strawberry/Net/Socket/TLSSocket.hpp"
@@ -93,11 +93,11 @@ namespace Strawberry::Net::Websocket
 
 
 	protected:
-		ClientBase(Socket::Buffered<S> socket);
+		ClientBase(Socket::BufferedSocket<S> socket);
 
 
 	protected:
-		Core::Optional<Socket::Buffered<S>> mSocket;
+		Core::Optional<Socket::BufferedSocket<S>> mSocket;
 		Core::Optional<Error>   mError;
 	};
 
@@ -111,7 +111,7 @@ namespace Strawberry::Net::Websocket
 
 
 	protected:
-		WSClient(Socket::Buffered<Socket::TCPSocket> socket);
+		WSClient(Socket::BufferedSocket<Socket::TCPSocket> socket);
 	};
 
 
@@ -124,7 +124,7 @@ namespace Strawberry::Net::Websocket
 
 
 	protected:
-		WSSClient(Socket::Buffered<Socket::TLSSocket> socket);
+		WSSClient(Socket::BufferedSocket<Socket::TLSSocket> socket);
 	};
 } // namespace Strawberry::Net::Websocket
 

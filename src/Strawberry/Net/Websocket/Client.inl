@@ -339,7 +339,7 @@ namespace Strawberry::Net::Websocket
 
 
 	template <typename S>
-	ClientBase<S>::ClientBase(Socket::Buffered<S> socket)
+	ClientBase<S>::ClientBase(Socket::BufferedSocket<S> socket)
 		: mSocket(std::move(socket))
 	{
 		mSocket->Resize(SOCKET_BUFFER_SIZE);

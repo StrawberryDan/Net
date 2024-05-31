@@ -12,7 +12,7 @@ namespace Strawberry::Net::HTTP
 {
 	template <typename S>
 	ClientBase<S>::ClientBase(const Net::Endpoint& endpoint)
-		: mSocket(Socket::Buffered(S::Connect(endpoint).Unwrap(), SOCKET_BUFFER_SIZE))
+		: mSocket(Socket::BufferedSocket(S::Connect(endpoint).Unwrap(), SOCKET_BUFFER_SIZE))
 	{}
 
 
