@@ -1,6 +1,5 @@
 #include "Strawberry/Net/Socket/TCPSocket.hpp"
-
-
+#include <Strawberry/Core/IO/Logging.hpp>
 #include "Strawberry/Core/Assert.hpp"
 #include "Strawberry/Core/Markers.hpp"
 #include "Strawberry/Core/Util/Strings.hpp"
@@ -138,6 +137,7 @@ namespace Strawberry::Net::Socket
 				case WSAECONNRESET:
 					return Error::ConnectionReset;
 				default:
+					Core::Logging::Error("Unknown error on TCP recv: {}", error);
 					Core::Unreachable();
 			}
 		}
@@ -189,6 +189,7 @@ namespace Strawberry::Net::Socket
 					case WSAECONNRESET:
 						return Error::ConnectionReset;
 					default:
+						Core::Logging::Error("Unknown error on TCP send: {}", error);
 						Core::Unreachable();
 				}
 			}
