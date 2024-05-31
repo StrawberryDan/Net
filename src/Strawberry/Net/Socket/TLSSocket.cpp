@@ -139,13 +139,11 @@ namespace Strawberry::Net::Socket
 	StreamReadResult TLSSocket::Read(size_t length)
 	{
 		auto   buffer    = Core::IO::DynamicByteBuffer::Zeroes(length);
-		size_t bytesRead = 0;
 
-		auto thisRead = SSL_read(mSSL, reinterpret_cast<void*>(buffer.Data() + bytesRead), static_cast<int>(length - bytesRead));
-		if (thisRead > 0) { bytesRead += thisRead; }
-		else
+		auto thisRead = SSL_read(mSSL, reinterpret_cast<void*>(buffer.Data()), static_cast<int>(length));
+		if (thisRead <= 0)
 		{
-			auto error = SSL_get_error(mSSL, bytesRead);
+			auto error = SSL_get_error(mSSL, thisRead);
 			switch (error)
 			{
 				case SSL_ERROR_ZERO_RETURN:
@@ -160,39 +158,30 @@ namespace Strawberry::Net::Socket
 			}
 		}
 
-		buffer.Resize(bytesRead);
+		Core::Assert(thisRead > 0);
+		buffer.Resize(thisRead);
 		return buffer;
 	}
 
 
 	StreamReadResult TLSSocket::ReadAll(size_t length)
 	{
-		auto   buffer    = Core::IO::DynamicByteBuffer::Zeroes(length);
-		size_t bytesRead = 0;
+		auto buffer = Core::IO::DynamicByteBuffer::WithCapacity(length);
 
-		while (bytesRead < length)
+		while (buffer.Size() < length)
 		{
-			auto thisRead = SSL_read(mSSL, reinterpret_cast<void*>(buffer.Data() + bytesRead), static_cast<int>(length - bytesRead));
-			if (thisRead > 0) { bytesRead += thisRead; }
+			auto read = Read(length - buffer.Size());
+
+			if (read.IsOk())
+			{
+				buffer.Push(read.Unwrap());
+			}
 			else
 			{
-				auto error = SSL_get_error(mSSL, bytesRead);
-				switch (error)
-				{
-					case SSL_ERROR_ZERO_RETURN:
-						return Error::ConnectionReset;
-					case SSL_ERROR_SYSCALL:
-						return Error::System;
-					case SSL_ERROR_SSL:
-						return Error::OpenSSL;
-					default:
-						Core::Logging::Error("Unknown SSL_read error code: {}", error);
-						Core::Unreachable();
-				}
+				return read.Err();
 			}
 		}
 
-		Core::Assert(bytesRead == length);
 		return buffer;
 	}
 
@@ -205,7 +194,11 @@ namespace Strawberry::Net::Socket
 		{
 			auto writeResult = SSL_write(mSSL, bytes.Data() + bytesSent, bytes.Size() - bytesSent);
 
-			if (writeResult <= 0)
+			if (writeResult > 0)
+			{
+				bytesSent += writeResult;
+			}
+			else
 			{
 				int error = SSL_get_error(mSSL, writeResult);
 				switch (error)
@@ -219,10 +212,6 @@ namespace Strawberry::Net::Socket
 					default:
 						Core::Unreachable();
 				}
-			}
-			else
-			{
-				bytesSent += writeResult;
 			}
 		}
 
