@@ -17,26 +17,28 @@
 //----------------------------------------------------------------------------------------------------------------------
 namespace Strawberry::Net::Socket
 {
+	static int GetAddressFamily(const Endpoint& endpoint)
+	{
+		if (endpoint.GetAddress()->IsIPv4())
+		{
+			return AF_INET;
+		}
+		if (endpoint.GetAddress()->IsIPv6())
+		{
+			return AF_INET6;
+		}
+		Core::Unreachable();
+	}
+
+
 	Core::Result<TCPListener, Error> TCPListener::Bind(const Endpoint& endpoint)
 	{
 		TCPListener listener;
 		listener.mEndpoint = endpoint;
 
-
-		int addressFamily;
-		if (endpoint.GetAddress()->IsIPv4())
-		{
-			addressFamily = AF_INET;
-		}
-		else if (endpoint.GetAddress()->IsIPv6())
-		{
-			addressFamily = AF_INET6;
-		}
-		else
-		{
-			Core::Unreachable();
-		}
-
+		int addressFamily = endpoint.GetAddress()->IsIPv4()	?	AF_INET :
+							endpoint.GetAddress()->IsIPv6()	?	AF_INET6 :
+																Core::Unreachable<int>();
 
 		// Create Socket.
 		listener.mSocket = socket(addressFamily, SOCK_STREAM, IPPROTO_TCP);
@@ -47,19 +49,7 @@ namespace Strawberry::Net::Socket
 
 
 		// Get address info
-		addrinfo hints{.ai_flags = AI_ADDRCONFIG, .ai_socktype = SOCK_STREAM, .ai_protocol = IPPROTO_TCP};
-		if (endpoint.GetAddress()->IsIPv4())
-		{
-			hints.ai_family = AF_INET;
-		}
-		else if (endpoint.GetAddress()->IsIPv6())
-		{
-			hints.ai_family = AF_INET6;
-		}
-		else
-		{
-			Core::Unreachable();
-		}
+		addrinfo hints{.ai_flags = AI_ADDRCONFIG, .ai_family = addressFamily, .ai_socktype = SOCK_STREAM, .ai_protocol = IPPROTO_TCP};
 		addrinfo* peerAddress = nullptr;
 		auto      addrResult  = getaddrinfo(endpoint.GetAddress()->AsString().c_str(), std::to_string(endpoint.GetPort()).c_str(), &hints, &peerAddress);
 		if (addrResult != 0)
@@ -71,6 +61,7 @@ namespace Strawberry::Net::Socket
 
 		// Bind Socket.
 		int bindResult = bind(listener.mSocket, peerAddress->ai_addr, sizeof(*peerAddress->ai_addr));
+		freeaddrinfo(peerAddress);
 		if (bindResult == SOCKET_ERROR)
 		{
 			auto error = WSAGetLastError();
