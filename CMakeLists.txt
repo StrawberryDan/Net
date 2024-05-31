@@ -38,12 +38,12 @@ if (NOT TARGET StrawberryNet)
 		src/Strawberry/Net/RTP/Packet.hpp
 		src/Strawberry/Net/Socket/API.hpp
 		src/Strawberry/Net/Socket/API.cpp
-			src/Strawberry/Net/Socket/TCPSocket.hpp
-			src/Strawberry/Net/Socket/TCPSocket.cpp
-			src/Strawberry/Net/Socket/TLSSocket.hpp
-			src/Strawberry/Net/Socket/TLSSocket.cpp
-			src/Strawberry/Net/Socket/UDPSocket.hpp
-			src/Strawberry/Net/Socket/UDPSocket.cpp
+		src/Strawberry/Net/Socket/TCPSocket.hpp
+		src/Strawberry/Net/Socket/TCPSocket.cpp
+		src/Strawberry/Net/Socket/TLSSocket.hpp
+		src/Strawberry/Net/Socket/TLSSocket.cpp
+		src/Strawberry/Net/Socket/UDPSocket.hpp
+		src/Strawberry/Net/Socket/UDPSocket.cpp
 		src/Strawberry/Net/Websocket/Client.hpp
 		src/Strawberry/Net/Websocket/Client.cpp
 		src/Strawberry/Net/Websocket/Client.inl
@@ -54,10 +54,10 @@ if (NOT TARGET StrawberryNet)
 		src/Strawberry/Net/Endpoint.hpp
 		src/Strawberry/Net/Endpoint.cpp
 		src/Strawberry/Net/Error.hpp
-			src/Strawberry/Net/Socket/TCPListener.hpp
-			src/Strawberry/Net/Socket/TCPListener.cpp
-			src/Strawberry/Net/Socket/Types.hpp
-			src/Strawberry/Net/Socket/Buffered.hpp
+		src/Strawberry/Net/Socket/TCPListener.hpp
+		src/Strawberry/Net/Socket/TCPListener.cpp
+		src/Strawberry/Net/Socket/Types.hpp
+		src/Strawberry/Net/Socket/Buffered.hpp
 	)
 	target_include_directories(StrawberryNet PUBLIC src/)
 	target_link_libraries(StrawberryNet PUBLIC StrawberryCore OpenSSL::SSL OpenSSL::Crypto)
