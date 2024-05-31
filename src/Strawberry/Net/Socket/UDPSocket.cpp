@@ -1,6 +1,5 @@
 #include "Strawberry/Net/Socket/UDPSocket.hpp"
-
-
+#include <Strawberry/Core/IO/Logging.hpp>
 #include "Strawberry/Core/Assert.hpp"
 #include "Strawberry/Core/Markers.hpp"
 #include "Strawberry/Core/Util/Strings.hpp"
@@ -165,8 +164,19 @@ namespace Strawberry::Net::Socket
 
 
 		auto bytesSent = sendto(mSocket, reinterpret_cast<const char*>(bytes.Data()), bytes.Size(), 0, peer->ai_addr, peer->ai_addrlen);
+		if (bytesSent <= 0)
+		{
+			auto error = WSAGetLastError();
+			switch (error)
+			{
+				default:
+					Core::Logging::Error("Unknown error on UDP sendto: {}", error);
+					Core::Unreachable();
+			}
+		}
+
 		freeaddrinfo(peer);
-		if (bytesSent >= 0) { return bytesSent; }
-		else { Core::Unreachable(); }
+		Core::AssertEQ(bytesSent, bytes.Size());
+		return bytes.Size();
 	}
 } // namespace Strawberry::Net::Socket
