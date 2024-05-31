@@ -57,7 +57,7 @@ if (NOT TARGET StrawberryNet)
 		src/Strawberry/Net/Socket/TCPListener.hpp
 		src/Strawberry/Net/Socket/TCPListener.cpp
 		src/Strawberry/Net/Socket/Types.hpp
-		src/Strawberry/Net/Socket/Buffered.hpp
+		src/Strawberry/Net/Socket/BufferedSocket.hpp
 	)
 	target_include_directories(StrawberryNet PUBLIC src/)
 	target_link_libraries(StrawberryNet PUBLIC StrawberryCore OpenSSL::SSL OpenSSL::Crypto)
