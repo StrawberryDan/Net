@@ -33,6 +33,9 @@ namespace Strawberry::Net::Socket
 		~TLSSocket();
 
 
+		Endpoint GetEndpoint() const;
+
+
 		[[nodiscard]] bool Poll() const;
 		StreamReadResult   Read(size_t length);
 		StreamReadResult   ReadAll(size_t length);
@@ -42,5 +45,6 @@ namespace Strawberry::Net::Socket
 	private:
 		TCPSocket mTCP;
 		SSL*      mSSL;
+		Endpoint  mEndpoint;
 	};
 } // namespace Strawberry::Net::Socket

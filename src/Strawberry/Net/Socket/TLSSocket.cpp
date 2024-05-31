@@ -78,6 +78,7 @@ namespace Strawberry::Net::Socket
 		TLSSocket tls;
 		tls.mTCP = tcp.Unwrap();
 		tls.mSSL = ssl;
+		tls.mEndpoint = endpoint;
 		return tls;
 	}
 
@@ -120,6 +121,12 @@ namespace Strawberry::Net::Socket
 
 			SSL_free(mSSL);
 		}
+	}
+
+
+	Endpoint TLSSocket::GetEndpoint() const
+	{
+		return mEndpoint;
 	}
 
 

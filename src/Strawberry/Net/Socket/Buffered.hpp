@@ -6,6 +6,7 @@
 //======================================================================================================================
 #include "Strawberry/Core/Collection/CircularBuffer.hpp"
 #include "Strawberry/Net/Socket/Types.hpp"
+#include "Strawberry/Net/Endpoint.hpp"
 // Standard Library
 #include <cstdint>
 #include <thread>
@@ -28,6 +29,9 @@ namespace Strawberry::Net::Socket
 
 		void Resize(size_t newSize);
 		size_t BufferSize() const;
+
+
+		Endpoint GetEndpoint() const;
 
 
 		S TakeSocket() &&;
@@ -144,6 +148,13 @@ namespace Strawberry::Net::Socket
 	size_t Buffered<S>::BufferSize() const
 	{
 		return mBuffer.Capacity();
+	}
+
+
+	template<typename S>
+	Endpoint Buffered<S>::GetEndpoint() const
+	{
+		return mSocket.GetEndpoint();
 	}
 
 
