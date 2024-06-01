@@ -1,4 +1,6 @@
 #include "Strawberry/Net/Socket/UDPSocket.hpp"
+
+#include <thread>
 #include <Strawberry/Core/IO/Logging.hpp>
 #include "Strawberry/Core/Assert.hpp"
 #include "Strawberry/Core/Markers.hpp"
@@ -177,15 +179,27 @@ namespace Strawberry::Net::Socket
         Core::Assert(result == 0);
 
 
-        auto bytesSent = sendto(mSocket, reinterpret_cast<const char*>(bytes.Data()), bytes.Size(), 0, peer->ai_addr, peer->ai_addrlen);
-        if (bytesSent <= 0)
+        int bytesSent = 0;
+        while (true)
         {
-            auto error = WSAGetLastError();
-            switch (error)
+            auto sendResult = sendto(mSocket, reinterpret_cast<const char*>(bytes.Data()), bytes.Size(), 0, peer->ai_addr, peer->ai_addrlen);
+            if (sendResult <= 0)
             {
-                default: Core::Logging::Error("Unknown error on UDP sendto: {}", error);
-                    Core::Unreachable();
+                auto error = WSAGetLastError();
+                switch (error)
+                {
+                    // If socket buffer is full, give it a chance to empty and try again
+                    case WSAENOBUFS:
+                        std::this_thread::yield();
+                        continue;
+                    default:
+                        Core::Logging::Error("Unknown error on UDP sendto: {}", error);
+                        Core::Unreachable();
+                }
             }
+
+            bytesSent = sendResult;
+            break;
         }
 
         freeaddrinfo(peer);
