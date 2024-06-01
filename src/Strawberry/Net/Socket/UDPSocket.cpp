@@ -179,7 +179,6 @@ namespace Strawberry::Net::Socket
         Core::Assert(result == 0);
 
 
-        int bytesSent = 0;
         while (true)
         {
             auto sendResult = sendto(mSocket, reinterpret_cast<const char*>(bytes.Data()), bytes.Size(), 0, peer->ai_addr, peer->ai_addrlen);
@@ -198,12 +197,12 @@ namespace Strawberry::Net::Socket
                 }
             }
 
-            bytesSent = sendResult;
+
+            Core::AssertEQ(sendResult, bytes.Size());
             break;
         }
 
         freeaddrinfo(peer);
-        Core::AssertEQ(bytesSent, bytes.Size());
         return {};
     }
 } // namespace Strawberry::Net::Socket
