@@ -62,6 +62,7 @@ if (NOT TARGET StrawberryNet)
 	target_include_directories(StrawberryNet PUBLIC src/)
 	target_link_libraries(StrawberryNet PUBLIC StrawberryCore OpenSSL::SSL OpenSSL::Crypto)
 	set_target_properties(StrawberryNet PROPERTIES CXX_STANDARD 20)
+    set_target_properties(StrawberryNet PROPERTIES CXX_STANDARD 23)
 
 
 	if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
@@ -76,3 +77,4 @@ if (NOT TARGET StrawberryNet_Test)
 	target_link_libraries(StrawberryNet_Test PUBLIC StrawberryNet)
 	set_target_properties(StrawberryNet_Test PROPERTIES CXX_STANDARD 20)
 endif()
+    set_target_properties(StrawberryNet_Test PROPERTIES CXX_STANDARD 23)
