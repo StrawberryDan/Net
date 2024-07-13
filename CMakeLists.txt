@@ -4,23 +4,23 @@ include(FetchContent)
 
 
 if (PROJECT_IS_TOP_LEVEL)
-	FetchContent_Declare(StrawberryConfig
-			GIT_REPOSITORY "https://github.com/StrawberryDan/Config.git"
-			GIT_TAG "main")
-	FetchContent_MakeAvailable(StrawberryConfig)
-	include(StrawberryConfig)
-endif()
+    FetchContent_Declare(StrawberryConfig
+            GIT_REPOSITORY "https://github.com/StrawberryDan/Config.git"
+            GIT_TAG "main")
+    FetchContent_MakeAvailable(StrawberryConfig)
+    include(StrawberryConfig)
+endif ()
 
 
 if (NOT TARGET StrawberryNet)
-	find_package(OpenSSL REQUIRED)
+    find_package(OpenSSL REQUIRED)
 
 
-	if (NOT TARGET StrawberryCore AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../Core)
-		add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../Core ${CMAKE_CURRENT_BINARY_DIR}/Core)
-	elseif (NOT TARGET StrawberryCore)
-		message(FATAL_ERROR "Could not find Strawberry Core at ${CMAKE_CURRENT_SOURCE_DIR}/../Core")
-	endif()
+    if (NOT TARGET StrawberryCore AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../Core)
+        add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../Core ${CMAKE_CURRENT_BINARY_DIR}/Core)
+    elseif (NOT TARGET StrawberryCore)
+        message(FATAL_ERROR "Could not find Strawberry Core at ${CMAKE_CURRENT_SOURCE_DIR}/../Core")
+    endif ()
 
 
     add_library(StrawberryNet STATIC
@@ -64,10 +64,10 @@ if (NOT TARGET StrawberryNet)
     set_target_properties(StrawberryNet PROPERTIES CXX_STANDARD 23)
 
 
-	if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-		target_link_libraries(StrawberryNet PUBLIC ws2_32)
-	endif ()
-endif()
+    if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+        target_link_libraries(StrawberryNet PUBLIC ws2_32)
+    endif ()
+endif ()
 
 
 if (NOT TARGET StrawberryNet_Test)
