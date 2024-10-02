@@ -4,11 +4,18 @@
 // Strawberry Net
 #include "TCPListener.hpp"
 // Strawberry Core
+
+#include "API.hpp"
 #include "Strawberry/Core/Markers.hpp"
 
 
-#if STRAWBERRY_TARGET_WINDOWS
+#ifdef STRAWBERRY_TARGET_WINDOWS
 #include <ws2tcpip.h>
+#elifdef STRAWBERRY_TARGET_MAC
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <unistd.h>
 #endif
 
 
@@ -60,9 +67,13 @@ namespace Strawberry::Net::Socket
         // Bind Socket.
         int bindResult = bind(listener.mSocket, peerAddress->ai_addr, sizeof(*peerAddress->ai_addr));
         freeaddrinfo(peerAddress);
+#ifdef STRAWBERRY_TARGET_WINDOWS
         if (bindResult == SOCKET_ERROR)
+#elifdef STRAWBERRY_TARGET_MAC
+        if (bindResult == -1)
+#endif
         {
-            auto error = WSAGetLastError();
+            auto error = API::GetError();
             switch (error)
             {
                 default: Core::Unreachable();
@@ -72,9 +83,13 @@ namespace Strawberry::Net::Socket
 
         // Put socket into listen mode.
         int listenResult = listen(listener.mSocket, SOMAXCONN);
-        if (listenResult == SOCKET_ERROR)
+#ifdef STRAWBERRY_TARGET_WINDOWS
+        if (bindResult == SOCKET_ERROR)
+#elifdef STRAWBERRY_TARGET_MAC
+        if (bindResult == -1)
+#endif
         {
-            auto error = WSAGetLastError();
+            auto error = API::GetError();
             switch (error)
             {
                 default: Core::Unreachable();
@@ -131,9 +146,13 @@ namespace Strawberry::Net::Socket
         socklen_t        peerLen = sizeof(peer);
 
         socket.mSocket = accept(mSocket, reinterpret_cast<sockaddr*>(&peer), &peerLen);
-        if (socket.mSocket == INVALID_SOCKET)
+#ifdef STRAWBERRY_TARGET_WINDOWS
+        if (socket.mSocket == SOCKET_ERROR)
+#elifdef STRAWBERRY_TARGET_MAC
+        if (socket.mSocket == -1)
+#endif
         {
-            auto error = WSAGetLastError();
+            auto error = API::GetError();
             switch (error)
             {
                 default: Core::Unreachable();

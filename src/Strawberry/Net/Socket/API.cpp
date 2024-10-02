@@ -45,4 +45,13 @@ namespace Strawberry::Net::Socket
     {
         return sIsInitialised;
     }
+
+    ErrorCode API::GetError()
+    {
+#ifdef STRAWBERRY_TARGET_WINDOWS
+        return WSAGetLastError();
+#elifdef STRAWBERRY_TARGET_MAC
+        return errno;
+#endif
+    }
 } // namespace Strawberry::Net::Socket

@@ -1,5 +1,7 @@
 #include "Strawberry/Net/Socket/TCPSocket.hpp"
 #include <Strawberry/Core/IO/Logging.hpp>
+
+#include "API.hpp"
 #include "Strawberry/Core/Assert.hpp"
 #include "Strawberry/Core/Markers.hpp"
 #include "Strawberry/Core/Util/Strings.hpp"
@@ -127,10 +129,10 @@ namespace Strawberry::Net::Socket
         auto recvResult = recv(mSocket, reinterpret_cast<char*>(buffer.Data()), buffer.Size(), 0);
         if (recvResult == -1)
         {
-            auto error = WSAGetLastError();
+            auto error = API::GetError();
             switch (error)
             {
-                case WSAECONNRESET: return Error::ConnectionReset;
+                case ErrorCodes::ConnectionReset: return Error::ConnectionReset;
                 default: Core::Logging::Error("Unknown error on TCP recv: {}", error);
                     Core::Unreachable();
             }
@@ -180,10 +182,9 @@ namespace Strawberry::Net::Socket
             }
             else
             {
-                auto error = WSAGetLastError();
-                switch (error)
+                switch (auto error = API::GetError())
                 {
-                    case WSAECONNRESET: return Error::ConnectionReset;
+                    case ErrorCodes::ConnectionReset: return Error::ConnectionReset;
                     default: Core::Logging::Error("Unknown error on TCP send: {}", error);
                         Core::Unreachable();
                 }

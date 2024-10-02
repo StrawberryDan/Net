@@ -2,6 +2,8 @@
 
 #include <thread>
 #include <Strawberry/Core/IO/Logging.hpp>
+
+#include "API.hpp"
 #include "Strawberry/Core/Assert.hpp"
 #include "Strawberry/Core/Markers.hpp"
 #include "Strawberry/Core/Util/Strings.hpp"
@@ -184,11 +186,11 @@ namespace Strawberry::Net::Socket
             auto sendResult = sendto(mSocket, reinterpret_cast<const char*>(bytes.Data()), bytes.Size(), 0, peer->ai_addr, peer->ai_addrlen);
             if (sendResult <= 0)
             {
-                auto error = WSAGetLastError();
+                auto error = API::GetError();
                 switch (error)
                 {
                     // If socket buffer is full, give it a chance to empty and try again
-                    case WSAENOBUFS:
+                    case ErrorCodes::NoBufferSpace:
                         std::this_thread::yield();
                         continue;
                     default:

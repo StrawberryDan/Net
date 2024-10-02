@@ -1,8 +1,32 @@
 #pragma once
+#include <sys/errno.h>
 
 
 namespace Strawberry::Net::Socket
 {
+
+#ifdef STRAWBERRY_TARGET_WINDOWS
+    using ErrorCode = int;
+#elifdef STRAWBERRY_TARGET_MAC
+    using ErrorCode = errno_t;
+#endif
+
+
+    namespace ErrorCodes {
+        enum : ErrorCode
+        {
+#ifdef STRAWBERRY_TARGET_WINDOWS
+            ConnectionReset = WSAECONNRESET,
+            NoBufferSpace = WSAENOBUFS,
+    #elifdef STRAWBERRY_TARGET_MAC
+            ConnectionReset = ECONNRESET,
+            NoBufferSpace = ENOBUFS,
+    #endif
+        };
+    }
+
+
+
     class API
     {
         public:
@@ -10,6 +34,8 @@ namespace Strawberry::Net::Socket
             static void Terminate();
 
             static bool IsInitialised();
+
+            static ErrorCode GetError();
 
         private:
             static bool sIsInitialised;
