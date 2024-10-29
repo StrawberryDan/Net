@@ -1,5 +1,10 @@
 #pragma once
-#include <sys/errno.h>
+
+#if STRAWBERRY_TARGET_WINDOWS
+#include <winsock2.h>
+#elif STRAWBERRY_TARGET_MACOS || STRAWBERRY_TARGET_LINUX
+    #include <sys/errno.h>
+#endif
 
 
 namespace Strawberry::Net::Socket

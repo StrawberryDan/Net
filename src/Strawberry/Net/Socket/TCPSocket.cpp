@@ -114,6 +114,15 @@ namespace Strawberry::Net::Socket
             {mSocket, POLLIN, 0}
         };
         int pollResult = WSAPoll(fds, 1, 0);
+        if (pollResult == -1)
+        {
+            auto error = API::GetError();
+            switch (error)
+            {
+                default: Core::Logging::Error("Unknown error on TCP recv: {}", error);
+                    Core::Unreachable();
+            }
+        }
         Core::Assert(pollResult >= 0);
         return static_cast<bool>(fds[0].revents & POLLIN);
 #else

@@ -79,13 +79,13 @@ namespace Strawberry::Net
             // Checking
             [[nodiscard]] inline bool IsIPv4() const
             {
-                return std::holds_alternative<IPv4Address>(mPayload);
+                return mPayload.IsType<IPv4Address>();
             }
 
 
             [[nodiscard]] inline bool IsIPv6() const
             {
-                return std::holds_alternative<IPv6Address>(mPayload);
+                return mPayload.IsType<IPv6Address>();
             }
 
 
@@ -96,6 +96,6 @@ namespace Strawberry::Net
             [[nodiscard]] std::string                 AsString() const;
 
         private:
-            std::variant<IPv4Address, IPv6Address> mPayload;
+            Core::Variant<IPv4Address, IPv6Address> mPayload;
     };
 } // namespace Strawberry::Net
