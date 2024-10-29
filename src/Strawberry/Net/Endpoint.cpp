@@ -50,7 +50,7 @@ namespace Strawberry::Net
         if (result)
         {
             result->mHostName = hostname;
-            return *result;
+            return result.Unwrap();
         }
         else
         {
