@@ -34,12 +34,14 @@ namespace Strawberry::Net
                 auto        ipData = reinterpret_cast<sockaddr_in*>(cursor->ai_addr);
                 IPv4Address addr(Core::IO::ByteBuffer<4>(ipData->sin_addr.s_addr));
                 result = Endpoint(addr, port);
+                break;
             }
-            else if (cursor->ai_family == AF_INET6)
+            if (cursor->ai_family == AF_INET6)
             {
                 auto        ipData = reinterpret_cast<sockaddr_in6*>(cursor->ai_addr);
                 IPv6Address addr(Core::IO::ByteBuffer<16>(&ipData->sin6_addr));
                 result = Endpoint(addr, port);
+                break;
             }
 
             cursor = cursor->ai_next;
