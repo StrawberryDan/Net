@@ -52,6 +52,11 @@ namespace Strawberry::Net::Socket
         freeaddrinfo(peerAddress);
         tcpSocket.mSocket   = handle;
         tcpSocket.mEndpoint = endpoint;
+
+        DWORD keepAlive = -1;
+        Core::AssertEQ(
+            setsockopt(tcpSocket.mSocket, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char*>(&keepAlive), sizeof(DWORD)),
+            0);
         return tcpSocket;
     }
 

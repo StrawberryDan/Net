@@ -97,6 +97,8 @@ namespace Strawberry::Net::Socket
         }
         Core::AssertEQ(listenResult, 0);
 
+        DWORD keepAlive = 1;
+        setsockopt(listener.mSocket, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char*>(keepAlive), sizeof(DWORD));
 
         return std::move(listener);
     }
@@ -174,6 +176,11 @@ namespace Strawberry::Net::Socket
         {
             Core::Unreachable();
         }
+
+        DWORD keepAlive = -1;
+        Core::AssertEQ(
+            setsockopt(socket.mSocket, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char*>(&keepAlive), sizeof(DWORD)),
+            0);
 
         return socket;
     }
