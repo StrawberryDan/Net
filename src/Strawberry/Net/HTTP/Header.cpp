@@ -9,44 +9,39 @@ namespace Strawberry::Net::HTTP
 {
     void Header::Add(const Header::Key& key, const Header::Value& value)
     {
-        auto lc = Core::ToLowercase(key);
-        if (mEntries.contains(lc))
+        if (mEntries.contains(key))
         {
-            mEntries.at(lc).push_back(value);
+            mEntries.at(key).push_back(value);
         }
         else
         {
-            mEntries.insert({lc, {value}});
+            mEntries.insert({key, {value}});
         }
     }
 
 
     void Header::Set(const Header::Key& key, const Header::Value& value)
     {
-        auto lc = Core::ToLowercase(key);
-        mEntries.insert_or_assign(lc, std::vector<Value>{value});
+        mEntries.insert_or_assign(key, std::vector<Value>{value});
     }
 
 
     Header::Value Header::Get(const Header::Key& key) const
     {
-        auto lc = Core::ToLowercase(key);
-        Core::Assert(mEntries.contains(lc));
-        return mEntries.at(lc)[0];
+        Core::Assert(mEntries.contains(key));
+        return mEntries.at(key)[0];
     }
 
 
     std::vector<Header::Value> Header::GetAll(const Header::Key& key) const
     {
-        auto lc = Core::ToLowercase(key);
-        Core::Assert(mEntries.contains(lc));
-        return mEntries.at(lc);
+        Core::Assert(mEntries.contains(key));
+        return mEntries.at(key);
     }
 
 
     bool Header::Contains(const Header::Key& key) const
     {
-        auto lc = Core::ToLowercase(key);
-        return mEntries.contains(lc);
+        return mEntries.contains(key);
     }
 } // namespace Strawberry::Net::HTTP
