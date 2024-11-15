@@ -18,28 +18,32 @@ namespace Strawberry::Net::HTTP
     template<typename S>
     void ClientBase<S>::SendRequest(const Request& request)
     {
+        Core::IO::DynamicByteBuffer bytes;
+
         std::string headerLine = fmt::format(
             "{} {} HTTP/{}\r\n",
             request.GetVerb().ToString(),
             request.GetURI(),
             request.GetVersion().ToString());
-        mSocket.Write({headerLine.data(), headerLine.length()}).Unwrap();
+        bytes.Write({headerLine.data(), headerLine.length()}).Unwrap();
         for (const auto& [key, values]: *request.GetHeader())
         {
             for (const auto& value: values)
             {
                 std::string formatted = fmt::format("{}: {}\r\n", key, value);
-                mSocket.Write({formatted.data(), formatted.length()}).Unwrap();
+                bytes.Write({formatted.data(), formatted.length()}).Unwrap();
             }
         }
 
         std::vector<char> blankLine = {'\r', '\n'};
-        mSocket.Write({blankLine.data(), blankLine.size()}).Unwrap();
+        bytes.Write({blankLine.data(), blankLine.size()}).Unwrap();
 
         if (request.GetPayload().Size() > 0)
         {
-            mSocket.Write({request.GetPayload().Data(), request.GetPayload().Size()}).Unwrap();
+            bytes.Write({request.GetPayload().Data(), request.GetPayload().Size()}).Unwrap();
         }
+
+        mSocket.Write(bytes);
     }
 
 
