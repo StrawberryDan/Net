@@ -43,7 +43,7 @@ namespace Strawberry::Net::HTTP
             bytes.Write({request.GetPayload().Data(), request.GetPayload().Size()}).Unwrap();
         }
 
-        mSocket.Write(bytes);
+        mSocket.Write(bytes).Unwrap();
     }
 
 
