@@ -51,12 +51,12 @@ namespace Strawberry::Net::Socket
                         bytes.Push(mBuffer.Pop().Unwrap());
                     }
 
-                    auto refillError = RefillBuffer();
-                    if (refillError)
+                    if (auto refillResult = RefillBuffer(); !refillResult)
                     {
-                        switch (refillError.Value())
+                        switch (refillResult.Err())
                         {
-                            case Error::ConnectionReset: return refillError.Value();
+                            case Error::ConnectionReset: return refillResult.Err();
+                            case Error::NoData: continue;
                             default: Core::Unreachable();
                         }
                     }
@@ -82,7 +82,15 @@ namespace Strawberry::Net::Socket
                         bytes.Push(mBuffer.Pop().Unwrap());
                     }
 
-                    Core::Assert(!RefillBuffer().HasValue());
+                    if (auto refillResult = RefillBuffer(); !refillResult)
+                    {
+                        switch (refillResult.Err())
+                        {
+                            case Error::ConnectionReset: return refillResult.Err();
+                            case Error::NoData: continue;
+                            default: Core::Unreachable();
+                        }
+                    }
 
                     if (mBuffer.Empty())
                     {
@@ -124,11 +132,11 @@ namespace Strawberry::Net::Socket
             }
 
         protected:
-            Core::Optional<Error> RefillBuffer()
+            Core::Result<void, Error> RefillBuffer()
             {
                 if (!mSocket.Poll())
                 {
-                    return Core::NullOpt;
+                    return Error::NoData;
                 }
 
                 if (BufferSpaceAvailable() > 0)
@@ -146,7 +154,7 @@ namespace Strawberry::Net::Socket
                     }
                 }
 
-                return Core::NullOpt;
+                return Core::Success;
             }
 
 
