@@ -205,6 +205,6 @@ namespace Strawberry::Net::Socket
         }
 
         freeaddrinfo(peer);
-        return {};
+        return Core::Success;
     }
 } // namespace Strawberry::Net::Socket

@@ -50,7 +50,7 @@ namespace Strawberry::Net::Websocket
                 {
                     return std::string("Parse Error");
                 }
-                return Core::Result<nlohmann::json, std::string>::Ok(std::forward<nlohmann::json>(json));
+                return json;
             }
 
             default: Core::DebugBreak();

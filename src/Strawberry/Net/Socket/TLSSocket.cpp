@@ -220,6 +220,6 @@ namespace Strawberry::Net::Socket
             }
         }
 
-        return {};
+        return Core::Success;
     }
 } // namespace Strawberry::Net::Socket
