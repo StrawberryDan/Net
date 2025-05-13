@@ -25,7 +25,7 @@ namespace Strawberry::Net::HTTP
 
 
             /// Removes and returns the socket of an rvalue HTTP client.
-            inline Socket::BufferedSocket<S> IntoSocket() &&
+            Socket::BufferedSocket<S> IntoSocket() &&
             {
                 return std::move(mSocket);
             }
