@@ -220,7 +220,7 @@ namespace Strawberry::Net::Websocket
 
         bool   final;
         Opcode opcode;
-        if (auto byte = mSocket->Read(1).template Map([](auto x) -> uint8_t
+        if (auto byte = mSocket->ReadAll(1).Map([](auto x) -> uint8_t
         {
             return x.template Into<uint8_t>();
         }))
@@ -245,7 +245,7 @@ namespace Strawberry::Net::Websocket
 
         bool   masked;
         size_t size;
-        if (auto byte = mSocket->Read(1).template Map([](auto x)
+        if (auto byte = mSocket->ReadAll(1).template Map([](auto x)
         {
             return x.template Into<uint8_t>();
         }))
@@ -255,11 +255,11 @@ namespace Strawberry::Net::Websocket
             uint8_t sizeByte = *byte & 0b01111111;
             if (sizeByte == 126)
             {
-                size = Core::FromBigEndian(mSocket->Read(sizeof(uint16_t)).Unwrap().template Into<uint16_t>());
+                size = Core::FromBigEndian(mSocket->ReadAll(sizeof(uint16_t)).Unwrap().template Into<uint16_t>());
             }
             else if (sizeByte == 127)
             {
-                size = Core::FromBigEndian(mSocket->Read(sizeof(uint64_t)).Unwrap().template Into<uint64_t>());
+                size = Core::FromBigEndian(mSocket->ReadAll(sizeof(uint64_t)).Unwrap().template Into<uint64_t>());
             }
             else
             {
@@ -316,6 +316,6 @@ namespace Strawberry::Net::Websocket
     ClientBase<S>::ClientBase(Socket::BufferedSocket<S> socket)
         : mSocket(std::move(socket))
     {
-        mSocket->Resize(SOCKET_BUFFER_SIZE);
+        mSocket->SetBufferCapacity(SOCKET_BUFFER_SIZE);
     }
 } // namespace Strawberry::Net::Websocket
