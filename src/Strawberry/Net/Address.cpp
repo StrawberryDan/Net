@@ -93,17 +93,17 @@ namespace Strawberry::Net
 
     Core::Optional<IPv4Address> IPAddress::AsIPv4() const
     {
-        if (IsIPv4()) return mPayload.Value<IPv4Address>();
-        else
-            return {};
+        if (IsIPv4()) return mPayload.Ref<IPv4Address>();
+
+        return {};
     }
 
 
     Core::Optional<IPv6Address> IPAddress::AsIPv6() const
     {
-        if (IsIPv6()) return mPayload.Value<IPv6Address>();
-        else
-            return {};
+        if (IsIPv6()) return mPayload.Ref<IPv6Address>();
+
+        return {};
     }
 
 
