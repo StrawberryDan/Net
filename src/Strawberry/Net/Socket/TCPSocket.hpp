@@ -4,18 +4,17 @@
 //======================================================================================================================
 //	Includes
 //======================================================================================================================
-#include "Strawberry/Core/IO/DynamicByteBuffer.hpp"
-#include "Strawberry/Core/IO/Error.hpp"
-#include "Strawberry/Net/Endpoint.hpp"
-#include "Strawberry/Net/Error.hpp"
-#include "Strawberry/Core/Types/Result.hpp"
-#include "Strawberry/Net/Socket/Types.hpp"
-// Standard Library
-#include <string>
 // Platform Specific
 #if STRAWBERRY_TARGET_WINDOWS
 #include <winsock2.h>
 #endif
+
+#include "Strawberry/Net/Endpoint.hpp"
+#include "Strawberry/Net/Error.hpp"
+#include "Strawberry/Net/Socket/Types.hpp"
+#include "Strawberry/Core/IO/DynamicByteBuffer.hpp"
+#include "Strawberry/Core/Types/Result.hpp"
+
 
 
 namespace Strawberry::Net::Socket
