@@ -88,7 +88,7 @@ namespace Strawberry::Net::Websocket
 
             ClientBase(Socket::BufferedSocket<S> socket);
 
-            Core::Optional<Socket::BufferedSocket<S> > mSocket;
+            Core::Optional<Socket::BufferedSocket<S>> mSocket;
     };
 
 
