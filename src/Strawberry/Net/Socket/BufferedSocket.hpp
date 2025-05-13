@@ -4,11 +4,11 @@
 //======================================================================================================================
 //	Includes
 //======================================================================================================================
-#include "Strawberry/Core/Collection/CircularBuffer.hpp"
 #include "Strawberry/Net/Socket/Types.hpp"
 #include "Strawberry/Net/Endpoint.hpp"
 // Standard Library
 #include <cstdint>
+#include <deque>
 #include <thread>
 
 
@@ -23,20 +23,21 @@ namespace Strawberry::Net::Socket
     {
         public:
             BufferedSocket(S socket, size_t bufferSize)
-                : mSocket(std::move(socket))
-                , mBuffer(bufferSize) {}
+                : mCapacity(bufferSize)
+                , mSocket(std::move(socket))
+            {}
+
+
+            BufferedSocket(const BufferedSocket&) = delete;
+            BufferedSocket& operator=(const BufferedSocket&) = delete;
+
+            BufferedSocket(BufferedSocket&&) noexcept = default;
+            BufferedSocket& operator=(BufferedSocket&& buffered) = delete;
 
 
             bool Poll() const
             {
-                if (mBuffer.Empty())
-                {
-                    return mSocket.Poll();
-                }
-                else
-                {
-                    return true;
-                }
+                return !mBuffer.empty() || mSocket.Poll();
             }
 
 
@@ -46,24 +47,29 @@ namespace Strawberry::Net::Socket
 
                 while (bytes.Size() < size)
                 {
-                    while (!mBuffer.Empty() && bytes.Size() < size)
+                    if (mBuffer.empty())
                     {
-                        bytes.Push(mBuffer.Pop().Unwrap());
-                    }
-
-                    if (auto refillResult = RefillBuffer(); !refillResult)
-                    {
-                        switch (refillResult.Err())
+                        if (auto refillResult = RefillBuffer(); !refillResult)
                         {
+                            switch (refillResult.Err())
+                            {
                             case Error::ConnectionReset: return refillResult.Err();
                             case Error::NoData: continue;
                             default: Core::Unreachable();
+                            }
                         }
                     }
 
-                    if (mBuffer.Empty())
+
+                    while (!mBuffer.empty() && bytes.Size() < size)
                     {
-                        return bytes;
+                        bytes.Push(mBuffer.front());
+                        mBuffer.pop_front();
+                    }
+
+                    if (!Poll())
+                    {
+                        break;
                     }
                 }
 
@@ -77,22 +83,28 @@ namespace Strawberry::Net::Socket
 
                 while (bytes.Size() < size)
                 {
-                    while (!mBuffer.Empty() && bytes.Size() < size)
+                    if (mBuffer.empty())
                     {
-                        bytes.Push(mBuffer.Pop().Unwrap());
-                    }
-
-                    if (auto refillResult = RefillBuffer(); !refillResult)
-                    {
-                        switch (refillResult.Err())
+                        if (auto refillResult = RefillBuffer(); !refillResult)
                         {
+                            switch (refillResult.Err())
+                            {
                             case Error::ConnectionReset: return refillResult.Err();
                             case Error::NoData: continue;
                             default: Core::Unreachable();
+                            }
                         }
                     }
 
-                    if (mBuffer.Empty())
+
+                    while (!mBuffer.empty() && bytes.Size() < size)
+                    {
+                        bytes.Push(mBuffer.front());
+                        mBuffer.pop_front();
+                    }
+
+
+                    if (bytes.Size() < size && !Poll())
                     {
                         std::this_thread::yield();
                     }
@@ -108,19 +120,19 @@ namespace Strawberry::Net::Socket
             }
 
 
-            void Resize(size_t newSize)
+            void SetBufferCapacity(size_t newSize)
             {
-                mBuffer.Resize(newSize);
+                mCapacity = newSize;
             }
 
 
-            size_t BufferSize() const
+            [[nodiscard]] size_t GetBufferCapacity() const
             {
-                return mBuffer.Capacity();
+                return mCapacity;
             }
 
 
-            Endpoint GetEndpoint() const
+            [[nodiscard]] Endpoint GetEndpoint() const
             {
                 return mSocket.GetEndpoint();
             }
@@ -131,6 +143,7 @@ namespace Strawberry::Net::Socket
                 return std::move(mSocket);
             }
 
+
         protected:
             Core::Result<void, Error> RefillBuffer()
             {
@@ -139,13 +152,14 @@ namespace Strawberry::Net::Socket
                     return Error::NoData;
                 }
 
-                if (BufferSpaceAvailable() > 0)
+                const size_t bufferSpaceAvailable = mCapacity - mBuffer.size();
+                if (bufferSpaceAvailable > 0)
                 {
-                    if (auto readResult = mSocket.Read(BufferSpaceAvailable()))
+                    if (auto readResult = mSocket.Read(bufferSpaceAvailable))
                     {
                         for (auto byte: readResult.Unwrap())
                         {
-                            mBuffer.Push(byte);
+                            mBuffer.emplace_back(byte);
                         }
                     }
                     else
@@ -157,15 +171,10 @@ namespace Strawberry::Net::Socket
                 return Core::Success;
             }
 
-
-            size_t BufferSpaceAvailable() const
-            {
-                return mBuffer.Capacity() - mBuffer.Size();
-            }
-
         private:
-            S                                         mSocket;
-            Core::Collection::CircularBuffer<uint8_t> mBuffer;
+            size_t              mCapacity;
+            S                   mSocket;
+            std::deque<uint8_t> mBuffer;
     };
 
 
