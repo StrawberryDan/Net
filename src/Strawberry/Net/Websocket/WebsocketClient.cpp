@@ -16,7 +16,7 @@ namespace Strawberry::Net::Websocket
         auto response = handshaker.Receive();
         if (response.GetStatus() != 101)
         {
-            return Error::Refused;
+            return ErrorRefused {};
         }
 
 
@@ -43,7 +43,7 @@ namespace Strawberry::Net::Websocket
         auto response = handshaker.Receive();
         if (response.GetStatus() != 101)
         {
-            return Error::Refused;
+            return ErrorRefused {};
         }
 
 

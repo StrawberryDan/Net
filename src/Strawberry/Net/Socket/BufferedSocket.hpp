@@ -51,12 +51,8 @@ namespace Strawberry::Net::Socket
                     {
                         if (auto refillResult = RefillBuffer(); !refillResult)
                         {
-                            switch (refillResult.Err())
-                            {
-                            case Error::ConnectionReset: return refillResult.Err();
-                            case Error::NoData: continue;
-                            default: Core::Unreachable();
-                            }
+                            if (refillResult.Err().template IsType<ErrorNoData>()) continue;
+                            return refillResult.Err();
                         }
                     }
 
@@ -87,12 +83,8 @@ namespace Strawberry::Net::Socket
                     {
                         if (auto refillResult = RefillBuffer(); !refillResult)
                         {
-                            switch (refillResult.Err())
-                            {
-                            case Error::ConnectionReset: return refillResult.Err();
-                            case Error::NoData: continue;
-                            default: Core::Unreachable();
-                            }
+                            if (refillResult.Err().template IsType<ErrorNoData>()) continue;
+                            return refillResult.Err();
                         }
                     }
 
@@ -149,7 +141,7 @@ namespace Strawberry::Net::Socket
             {
                 if (!mSocket.Poll())
                 {
-                    return Error::NoData;
+                    return ErrorNoData {};
                 }
 
                 const size_t bufferSpaceAvailable = mCapacity - mBuffer.size();

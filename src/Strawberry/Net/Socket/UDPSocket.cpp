@@ -32,7 +32,7 @@ namespace Strawberry::Net::Socket
         auto handle = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
         if (handle == -1)
         {
-            return Error::SocketCreation;
+            return ErrorSocketCreation {};
         }
 
         int  ipv6Only     = 0;
@@ -50,7 +50,7 @@ namespace Strawberry::Net::Socket
         auto handle = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
         if (handle == -1)
         {
-            return Error::SocketCreation;
+            return ErrorSocketCreation {};
         }
 
         UDPSocket client;
@@ -64,7 +64,7 @@ namespace Strawberry::Net::Socket
         auto handle = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
         if (handle == -1)
         {
-            return Error::SocketCreation;
+            return ErrorSocketCreation {};
         }
 
         UDPSocket client;

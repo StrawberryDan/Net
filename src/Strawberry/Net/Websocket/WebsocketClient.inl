@@ -49,10 +49,9 @@ namespace Strawberry::Net::Websocket
     {
         while (true)
         {
-            if (auto msg = ReadMessage(); msg.IsErr() && msg.Err() == Error::NoData)
+            if (auto msg = ReadMessage(); msg.IsErr() && msg.Err().template IsType<ErrorNoData>())
             {
                 std::this_thread::yield();
-                continue;
             }
             else
             {
@@ -196,7 +195,7 @@ namespace Strawberry::Net::Websocket
 
             if (message.GetOpcode() == Message::Opcode::Close)
             {
-                return Error::ConnectionReset;
+                return ErrorConnectionReset {};
             }
 
             return std::move(message);
@@ -215,7 +214,7 @@ namespace Strawberry::Net::Websocket
 
         if (!mSocket->Poll())
         {
-            return Error::NoData;
+            return ErrorNoData {};
         }
 
         bool   final;
@@ -235,7 +234,7 @@ namespace Strawberry::Net::Websocket
             {
                 Core::DebugBreak();
                 Disconnect(1002);
-                return Error::ProtocolError;
+                return ErrorProtocolError {};
             }
         }
         else
@@ -295,7 +294,7 @@ namespace Strawberry::Net::Websocket
         payload.push_back(reinterpret_cast<uint8_t*>(&endianCode)[0]);
         payload.push_back(reinterpret_cast<uint8_t*>(&endianCode)[1]);
         auto sendResult = SendMessage(Message(Message::Opcode::Close, payload));
-        if (sendResult == Error::ConnectionReset)
+        if (sendResult == ErrorConnectionReset {})
         {
             return;
         }
@@ -303,7 +302,7 @@ namespace Strawberry::Net::Websocket
         while (true)
         {
             auto msg = ReadMessage();
-            if (!msg && msg.Err() == Error::ConnectionReset ||
+            if (!msg && msg.Err() == ErrorConnectionReset{} ||
                 msg && msg.Unwrap().GetOpcode() == Message::Opcode::Close)
             {
                 break;

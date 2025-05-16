@@ -49,7 +49,7 @@ namespace Strawberry::Net::Socket
         listener.mSocket = socket(addressFamily, SOCK_STREAM, IPPROTO_TCP);
         if (listener.mSocket == -1)
         {
-            return Error::SocketCreation;
+            return ErrorSocketCreation {};
         }
 
 
@@ -60,7 +60,7 @@ namespace Strawberry::Net::Socket
         if (addrResult != 0)
         {
             freeaddrinfo(peerAddress);
-            return Error::AddressResolution;
+            return ErrorAddressResolution {};
         }
 
 

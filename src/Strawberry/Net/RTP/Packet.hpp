@@ -40,7 +40,7 @@ namespace Strawberry::Net::RTP
                 if (!headerData) return headerData.Err();
 
                 Header header = headerData->template Into<Header>();
-                if (!IsHeaderValid(header)) return Error::ParsingRTPPacket;
+                if (!IsHeaderValid(header)) return ErrorParsingRTPPacket {};
 
                 auto ccrcData = data.ReadAll(header.csrcCount * sizeof(uint32_t));
                 if (!ccrcData) return ccrcData.Err();

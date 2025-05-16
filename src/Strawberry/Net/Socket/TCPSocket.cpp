@@ -32,21 +32,21 @@ namespace Strawberry::Net::Socket
         if (addrResult != 0)
         {
             freeaddrinfo(peerAddress);
-            return Error::AddressResolution;
+            return ErrorAddressResolution {};
         }
 
         auto handle = socket(peerAddress->ai_family, peerAddress->ai_socktype, peerAddress->ai_protocol);
         if (handle == -1)
         {
             freeaddrinfo(peerAddress);
-            return Error::SocketCreation;
+            return ErrorSocketCreation {};
         }
 
         auto connection = connect(handle, peerAddress->ai_addr, peerAddress->ai_addrlen);
         if (connection == -1)
         {
             freeaddrinfo(peerAddress);
-            return Error::EstablishConnection;
+            return ErrorAddressResolution {};
         }
 
         freeaddrinfo(peerAddress);
@@ -146,14 +146,14 @@ namespace Strawberry::Net::Socket
             auto error = API::GetError();
             switch (error)
             {
-                case ErrorCodes::ConnectionReset: return Error::ConnectionReset;
+                case ErrorCodes::ConnectionReset: return Error(ErrorConnectionReset {});
                 default: Core::Logging::Error("Unknown error on TCP recv: {}", error);
                     Core::Unreachable();
             }
         }
 
 
-        if (recvResult == 0) return Error::ConnectionReset;
+        if (recvResult == 0) return Error(ErrorConnectionReset {});
         Core::Assert(recvResult > 0);
         buffer.Resize(recvResult);
         return buffer;
@@ -198,7 +198,7 @@ namespace Strawberry::Net::Socket
             {
                 switch (auto error = API::GetError())
                 {
-                    case ErrorCodes::ConnectionReset: return Error::ConnectionReset;
+                    case ErrorCodes::ConnectionReset: return ErrorConnectionReset {};
                     default: Core::Logging::Error("Unknown error on TCP send: {}", error);
                         Core::Unreachable();
                 }

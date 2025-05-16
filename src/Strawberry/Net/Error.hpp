@@ -1,23 +1,41 @@
 #pragma once
 
 
+#include "Strawberry/Core/Types/Variant.hpp"
+
+
 namespace Strawberry::Net
 {
-    enum class Error
-    {
-        DNSResolution,
-        SocketCreation,
-        AddressResolution,
-        EstablishConnection,
-        SSLAllocation,
-        SSLHandshake,
-        ParsingEndpoint,
-        ParsingRTPPacket,
-        ConnectionReset,
-        NoData,
-        ProtocolError,
-        Refused,
-        OpenSSL,
-        System,
-    };
+    struct ErrorDNSResolution {};
+    struct ErrorSocketCreation {};
+    struct ErrorAddressResolution {};
+    struct ErrorEstablishConnection {};
+    struct ErrorSSLAllocation {};
+    struct ErrorSSLHandshake {};
+    struct ErrorParsingEndpoint {};
+    struct ErrorParsingRTPPacket {};
+    struct ErrorConnectionReset {};
+    struct ErrorNoData {};
+    struct ErrorProtocolError {};
+    struct ErrorRefused {};
+    struct ErrorOpenSSL {};
+    struct ErrorSystem {};
+
+
+
+    using Error = Core::Variant<
+        ErrorDNSResolution,
+        ErrorSocketCreation,
+        ErrorAddressResolution,
+        ErrorEstablishConnection,
+        ErrorSSLAllocation,
+        ErrorSSLHandshake,
+        ErrorParsingEndpoint,
+        ErrorParsingRTPPacket,
+        ErrorConnectionReset,
+        ErrorNoData,
+        ErrorProtocolError,
+        ErrorRefused,
+        ErrorOpenSSL,
+        ErrorSystem>;
 }

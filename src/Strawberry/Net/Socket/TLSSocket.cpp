@@ -73,7 +73,7 @@ namespace Strawberry::Net::Socket
         auto ssl = SSL_new(TLSContext::Get());
         if (ssl == nullptr)
         {
-            return Error::SSLAllocation;
+            return ErrorSSLAllocation {};
         }
 
         if (endpoint.GetHostname())
@@ -86,7 +86,7 @@ namespace Strawberry::Net::Socket
         auto connectResult = SSL_connect(ssl);
         if (connectResult == -1)
         {
-            return Error::SSLHandshake;
+            return ErrorSSLHandshake {};
         }
 
         TLSSocket tls;
@@ -159,9 +159,9 @@ namespace Strawberry::Net::Socket
             auto error = SSL_get_error(mSSL, thisRead);
             switch (error)
             {
-                case SSL_ERROR_ZERO_RETURN: return Error::ConnectionReset;
-                case SSL_ERROR_SYSCALL: return Error::System;
-                case SSL_ERROR_SSL: return Error::OpenSSL;
+                case SSL_ERROR_ZERO_RETURN: return Error(ErrorConnectionReset {});
+                case SSL_ERROR_SYSCALL: return Error(ErrorSystem {});
+                case SSL_ERROR_SSL: return Error(ErrorOpenSSL {});
                 default: Core::Logging::Error("Unknown SSL_read error code: {}", error);
                     Core::Unreachable();
             }
@@ -212,9 +212,9 @@ namespace Strawberry::Net::Socket
                 int error = SSL_get_error(mSSL, writeResult);
                 switch (error)
                 {
-                    case SSL_ERROR_SSL: return Error::OpenSSL;
-                    case SSL_ERROR_SYSCALL: return Error::System;
-                    case SSL_ERROR_ZERO_RETURN: return Error::ConnectionReset;
+                    case SSL_ERROR_SSL: return ErrorOpenSSL {};
+                    case SSL_ERROR_SYSCALL: return ErrorSystem {};
+                    case SSL_ERROR_ZERO_RETURN: return ErrorConnectionReset {};
                     default: Core::Unreachable();
                 }
             }

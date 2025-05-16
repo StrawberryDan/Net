@@ -22,7 +22,7 @@ namespace Strawberry::Net
         auto      dnsResult = getaddrinfo(hostname.c_str(), std::to_string(port).c_str(), &hints, &peer);
         if (dnsResult != 0)
         {
-            return Error::DNSResolution;
+            return ErrorDNSResolution {};
         }
 
         Core::Optional<Endpoint> result;
@@ -54,7 +54,7 @@ namespace Strawberry::Net
         }
         else
         {
-            return Error::DNSResolution;
+            return ErrorDNSResolution {};
         }
     }
 
@@ -62,7 +62,7 @@ namespace Strawberry::Net
     Core::Result<Endpoint, Error> Endpoint::Resolve(const std::string& endpoint)
     {
         auto colonPos = endpoint.find(':');
-        if (colonPos == std::string::npos) return Error::ParsingEndpoint;
+        if (colonPos == std::string::npos) return ErrorParsingEndpoint {};
 
         std::string hostname = endpoint.substr(0, colonPos);
         std::string portstr  = endpoint.substr(colonPos + 1, endpoint.size());
@@ -74,7 +74,7 @@ namespace Strawberry::Net
         }
         catch (const std::exception& e)
         {
-            return Error::ParsingEndpoint;
+            return ErrorParsingEndpoint {};
         }
 
         return Resolve(hostname, port);
@@ -84,7 +84,7 @@ namespace Strawberry::Net
     Core::Result<Endpoint, Error> Endpoint::Parse(const std::string& endpoint)
     {
         auto colonPos = endpoint.find(':');
-        if (colonPos == std::string::npos) return Error::ParsingEndpoint;
+        if (colonPos == std::string::npos) return ErrorParsingEndpoint {};
 
         std::string hostname = endpoint.substr(0, colonPos);
         std::string portstr  = endpoint.substr(colonPos + 1, endpoint.size());
@@ -96,7 +96,7 @@ namespace Strawberry::Net
         }
         catch (const std::exception& e)
         {
-            return Error::ParsingEndpoint;
+            return ErrorParsingEndpoint {};
         }
 
         return Endpoint(hostname, port);
