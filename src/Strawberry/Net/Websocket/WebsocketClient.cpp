@@ -1,4 +1,4 @@
-#include "Strawberry/Net/Websocket/Client.hpp"
+#include "Strawberry/Net/Websocket/WebsocketClient.hpp"
 
 
 namespace Strawberry::Net::Websocket
@@ -27,7 +27,7 @@ namespace Strawberry::Net::Websocket
 
 
     WSClient::WSClient(Socket::BufferedSocket<Socket::TCPSocket> socket)
-        : ClientBase(std::move(socket)) {}
+        : WebsocketClientBase(std::move(socket)) {}
 
 
     Core::Result<WSSClient, Error> WSSClient::Connect(const Endpoint& endpoint, const std::string& resource)
@@ -53,5 +53,5 @@ namespace Strawberry::Net::Websocket
 
 
     WSSClient::WSSClient(Socket::BufferedSocket<Socket::TLSSocket> socket)
-        : ClientBase(std::move(socket)) {}
+        : WebsocketClientBase(std::move(socket)) {}
 } // namespace Strawberry::Net::Websocket

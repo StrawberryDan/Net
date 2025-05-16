@@ -21,7 +21,7 @@
 namespace Strawberry::Net::Websocket
 {
     template<typename S>
-    class ClientBase
+    class WebsocketClientBase
     {
         public:
             static constexpr size_t SOCKET_BUFFER_SIZE = 1024 * 1024 * 1;
@@ -30,15 +30,15 @@ namespace Strawberry::Net::Websocket
             //======================================================================================================================
             //  Contruction/Destruction
             //----------------------------------------------------------------------------------------------------------------------
-            ClientBase(const ClientBase&)            = delete;
-            ClientBase& operator=(const ClientBase&) = delete;
+            WebsocketClientBase(const WebsocketClientBase&)            = delete;
+            WebsocketClientBase& operator=(const WebsocketClientBase&) = delete;
 
 
-            ClientBase(ClientBase&& rhs) noexcept
+            WebsocketClientBase(WebsocketClientBase&& rhs) noexcept
                 : mSocket(std::move(rhs.mSocket)) {}
 
 
-            ClientBase& operator=(ClientBase&& rhs) noexcept
+            WebsocketClientBase& operator=(WebsocketClientBase&& rhs) noexcept
             {
                 if (this != &rhs)
                 {
@@ -50,7 +50,7 @@ namespace Strawberry::Net::Websocket
             }
 
 
-            ~ClientBase();
+            ~WebsocketClientBase();
 
 
             [[nodiscard]] Endpoint GetEndpoint() const;
@@ -86,14 +86,14 @@ namespace Strawberry::Net::Websocket
 
             void Disconnect(int code = 1000);
 
-            ClientBase(Socket::BufferedSocket<S> socket);
+            WebsocketClientBase(Socket::BufferedSocket<S> socket);
 
             Core::Optional<Socket::BufferedSocket<S>> mSocket;
     };
 
 
     class WSClient
-            : public ClientBase<Socket::TCPSocket>
+            : public WebsocketClientBase<Socket::TCPSocket>
     {
         public:
             static Core::Result<WSClient, Error> Connect(const Endpoint& endpoint, const std::string& resource);
@@ -104,7 +104,7 @@ namespace Strawberry::Net::Websocket
 
 
     class WSSClient
-            : public ClientBase<Socket::TLSSocket>
+            : public WebsocketClientBase<Socket::TLSSocket>
     {
         public:
             static Core::Result<WSSClient, Error> Connect(const Endpoint& endpoint, const std::string& resource);
@@ -114,4 +114,4 @@ namespace Strawberry::Net::Websocket
     };
 } // namespace Strawberry::Net::Websocket
 
-#include "Client.inl"
+#include "WebsocketClient.inl"

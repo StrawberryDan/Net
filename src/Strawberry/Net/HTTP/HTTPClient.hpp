@@ -12,7 +12,7 @@
 namespace Strawberry::Net::HTTP
 {
     template<typename S>
-    class ClientBase
+    class HTTPClientBase
     {
         public:
             static constexpr size_t SOCKET_BUFFER_SIZE = 1024 * 1024 * 1;
@@ -32,7 +32,7 @@ namespace Strawberry::Net::HTTP
 
         protected:
             /// Connects to the given endpoint over HTTP
-            ClientBase(const Endpoint& endpoint);
+            HTTPClientBase(const Endpoint& endpoint);
 
         private:
             /// Reads a line of input until a newline character from the socket.
@@ -45,14 +45,14 @@ namespace Strawberry::Net::HTTP
     };
 
 
-    class HTTPClient : public ClientBase<Socket::TCPSocket>
+    class HTTPClient : public HTTPClientBase<Socket::TCPSocket>
     {
         public:
             explicit HTTPClient(const Net::Endpoint& endpoint);
     };
 
 
-    class HTTPSClient : public ClientBase<Socket::TLSSocket>
+    class HTTPSClient : public HTTPClientBase<Socket::TLSSocket>
     {
         public:
             explicit HTTPSClient(const Net::Endpoint& endpoint);
@@ -60,4 +60,4 @@ namespace Strawberry::Net::HTTP
 } // namespace Strawberry::Net::HTTP
 
 
-#include "Client.inl"
+#include "HTTPClient.inl"

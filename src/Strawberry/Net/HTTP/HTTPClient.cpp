@@ -1,12 +1,12 @@
-#include "Strawberry/Net/HTTP/Client.hpp"
+#include "Strawberry/Net/HTTP/HTTPClient.hpp"
 
 
 namespace Strawberry::Net::HTTP
 {
     HTTPClient::HTTPClient(const Endpoint& endpoint)
-        : ClientBase<Socket::TCPSocket>(endpoint) {}
+        : HTTPClientBase<Socket::TCPSocket>(endpoint) {}
 
 
     HTTPSClient::HTTPSClient(const Endpoint& endpoint)
-        : ClientBase<Socket::TLSSocket>(endpoint) {}
+        : HTTPClientBase<Socket::TLSSocket>(endpoint) {}
 } // namespace Strawberry::Net::HTTP

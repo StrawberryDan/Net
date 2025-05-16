@@ -11,12 +11,12 @@
 namespace Strawberry::Net::HTTP
 {
     template<typename S>
-    ClientBase<S>::ClientBase(const Net::Endpoint& endpoint)
+    HTTPClientBase<S>::HTTPClientBase(const Net::Endpoint& endpoint)
         : mSocket(Socket::BufferedSocket(S::Connect(endpoint).Unwrap(), SOCKET_BUFFER_SIZE)) {}
 
 
     template<typename S>
-    void ClientBase<S>::SendRequest(const Request& request)
+    void HTTPClientBase<S>::SendRequest(const Request& request)
     {
         Core::IO::DynamicByteBuffer bytes;
 
@@ -48,7 +48,7 @@ namespace Strawberry::Net::HTTP
 
 
     template<typename S>
-    Response ClientBase<S>::Receive()
+    Response HTTPClientBase<S>::Receive()
     {
         static const auto statusLinePattern = std::regex(R"(HTTP\/([^\s]+)\s+(\d{3})\s+([^\r]*)\r\n)");
         static const auto headerLinePattern = std::regex(R"(([^:]+)\s*:\s*([^\r]+)\r\n)");
@@ -117,7 +117,7 @@ namespace Strawberry::Net::HTTP
 
 
     template<typename S>
-    Core::IO::DynamicByteBuffer ClientBase<S>::ReadChunkedPayload()
+    Core::IO::DynamicByteBuffer HTTPClientBase<S>::ReadChunkedPayload()
     {
         std::string       line;
         std::smatch       matchResults;
@@ -163,7 +163,7 @@ namespace Strawberry::Net::HTTP
 
 
     template<typename S>
-    std::string ClientBase<S>::ReadLine()
+    std::string HTTPClientBase<S>::ReadLine()
     {
         std::string line;
         while (!line.ends_with("\r\n"))

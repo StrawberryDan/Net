@@ -6,7 +6,7 @@
 
 
 #include "Strawberry/Core/IO/Base64.hpp"
-#include "Strawberry/Net/HTTP/Client.hpp"
+#include "Strawberry/Net/HTTP/HTTPClient.hpp"
 #include "Strawberry/Core/IO/Endian.hpp"
 #include "Strawberry/Core/Markers.hpp"
 
@@ -14,7 +14,7 @@
 namespace Strawberry::Net::Websocket
 {
     template<typename S>
-    ClientBase<S>::~ClientBase()
+    WebsocketClientBase<S>::~WebsocketClientBase()
     {
         if (mSocket)
         {
@@ -24,28 +24,28 @@ namespace Strawberry::Net::Websocket
 
 
     template<typename S>
-    Endpoint ClientBase<S>::GetEndpoint() const
+    Endpoint WebsocketClientBase<S>::GetEndpoint() const
     {
         return mSocket.Value().GetEndpoint();
     }
 
 
     template<typename S>
-    Core::Result<void, Error> ClientBase<S>::SendMessage(const Message& message)
+    Core::Result<void, Error> WebsocketClientBase<S>::SendMessage(const Message& message)
     {
         return TransmitFrame(message);
     }
 
 
     template<typename S>
-    Core::Result<Message, Error> ClientBase<S>::ReadMessage()
+    Core::Result<Message, Error> WebsocketClientBase<S>::ReadMessage()
     {
         return ReceiveFrame();
     }
 
 
     template<typename S>
-    Core::Result<Message, Error> ClientBase<S>::WaitMessage()
+    Core::Result<Message, Error> WebsocketClientBase<S>::WaitMessage()
     {
         while (true)
         {
@@ -63,7 +63,7 @@ namespace Strawberry::Net::Websocket
 
 
     template<typename S>
-    std::string ClientBase<S>::GenerateNonce()
+    std::string WebsocketClientBase<S>::GenerateNonce()
     {
         std::random_device          randomDevice;
         Core::IO::DynamicByteBuffer nonce(16);
@@ -83,7 +83,7 @@ namespace Strawberry::Net::Websocket
 
 
     template<typename S>
-    uint8_t ClientBase<S>::GetOpcodeMask(Message::Opcode opcode)
+    uint8_t WebsocketClientBase<S>::GetOpcodeMask(Message::Opcode opcode)
     {
         switch (opcode)
         {
@@ -99,7 +99,7 @@ namespace Strawberry::Net::Websocket
 
 
     template<typename S>
-    Core::Optional<Message::Opcode> ClientBase<S>::GetOpcodeFromByte(uint8_t byte)
+    Core::Optional<Message::Opcode> WebsocketClientBase<S>::GetOpcodeFromByte(uint8_t byte)
     {
         using Opcode = Message::Opcode;
 
@@ -118,7 +118,7 @@ namespace Strawberry::Net::Websocket
 
 
     template<typename S>
-    uint32_t ClientBase<S>::GenerateMaskingKey()
+    uint32_t WebsocketClientBase<S>::GenerateMaskingKey()
     {
         std::random_device rd;
         uint32_t           key;
@@ -131,7 +131,7 @@ namespace Strawberry::Net::Websocket
 
 
     template<typename S>
-    Core::Result<void, Error> ClientBase<S>::TransmitFrame(const Message& frame)
+    Core::Result<void, Error> WebsocketClientBase<S>::TransmitFrame(const Message& frame)
     {
         Core::IO::DynamicByteBuffer bytesToSend;
 
@@ -171,7 +171,7 @@ namespace Strawberry::Net::Websocket
 
 
     template<typename S>
-    Core::Result<Message, Error> ClientBase<S>::ReceiveFrame()
+    Core::Result<Message, Error> WebsocketClientBase<S>::ReceiveFrame()
     {
         auto fragResult = ReceiveFragment();
 
@@ -209,7 +209,7 @@ namespace Strawberry::Net::Websocket
 
 
     template<typename S>
-    Core::Result<typename ClientBase<S>::Fragment, Error> ClientBase<S>::ReceiveFragment()
+    Core::Result<typename WebsocketClientBase<S>::Fragment, Error> WebsocketClientBase<S>::ReceiveFragment()
     {
         using Opcode = Message::Opcode;
 
@@ -281,12 +281,12 @@ namespace Strawberry::Net::Websocket
         }
 
         Core::Assert(payload.size() == size);
-        return ClientBase<S>::Fragment(final, Message(opcode, payload));
+        return WebsocketClientBase<S>::Fragment(final, Message(opcode, payload));
     }
 
 
     template<typename S>
-    void ClientBase<S>::Disconnect(int code)
+    void WebsocketClientBase<S>::Disconnect(int code)
     {
         Core::Assert(mSocket.HasValue());
 
@@ -313,7 +313,7 @@ namespace Strawberry::Net::Websocket
 
 
     template<typename S>
-    ClientBase<S>::ClientBase(Socket::BufferedSocket<S> socket)
+    WebsocketClientBase<S>::WebsocketClientBase(Socket::BufferedSocket<S> socket)
         : mSocket(std::move(socket))
     {
         mSocket->SetBufferCapacity(SOCKET_BUFFER_SIZE);

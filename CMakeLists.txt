@@ -24,9 +24,9 @@ if (NOT TARGET StrawberryNet)
 
 
     add_library(StrawberryNet STATIC
-            src/Strawberry/Net/HTTP/Client.hpp
-            src/Strawberry/Net/HTTP/Client.cpp
-            src/Strawberry/Net/HTTP/Client.inl
+        src/Strawberry/Net/HTTP/HTTPClient.hpp
+        src/Strawberry/Net/HTTP/HTTPClient.cpp
+        src/Strawberry/Net/HTTP/HTTPClient.inl
             src/Strawberry/Net/HTTP/Constants.hpp
             src/Strawberry/Net/HTTP/Constants.cpp
             src/Strawberry/Net/HTTP/Header.hpp
@@ -44,9 +44,9 @@ if (NOT TARGET StrawberryNet)
             src/Strawberry/Net/Socket/TLSSocket.cpp
             src/Strawberry/Net/Socket/UDPSocket.hpp
             src/Strawberry/Net/Socket/UDPSocket.cpp
-            src/Strawberry/Net/Websocket/Client.hpp
-            src/Strawberry/Net/Websocket/Client.cpp
-            src/Strawberry/Net/Websocket/Client.inl
+        src/Strawberry/Net/Websocket/WebsocketClient.hpp
+        src/Strawberry/Net/Websocket/WebsocketClient.cpp
+        src/Strawberry/Net/Websocket/WebsocketClient.inl
             src/Strawberry/Net/Websocket/Message.hpp
             src/Strawberry/Net/Websocket/Message.cpp
             src/Strawberry/Net/Address.hpp
