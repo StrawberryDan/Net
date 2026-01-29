@@ -14,43 +14,43 @@ namespace Strawberry::Net::HTTP
             Response(Version mVersion, unsigned int mStatus, std::string mStatusText);
 
 
-            [[nodiscard]] inline const Version& GetVersion() const
+            [[nodiscard]] const Version& GetVersion() const
             {
                 return mVersion;
             }
 
 
-            [[nodiscard]] inline const unsigned int& GetStatus() const
+            [[nodiscard]] const unsigned int& GetStatus() const
             {
                 return mStatus;
             }
 
 
-            [[nodiscard]] inline const std::string& GetStatusText() const
+            [[nodiscard]] const std::string& GetStatusText() const
             {
                 return mStatusText;
             }
 
 
-            [[nodiscard]] inline const Header& GetHeader() const
+            [[nodiscard]] const Header& GetHeader() const
             {
                 return mHeader;
             }
 
 
-            inline Header& GetHeader()
+			Header& GetHeader()
             {
                 return mHeader;
             }
 
 
-            [[nodiscard]] inline const Core::IO::DynamicByteBuffer& GetPayload() const
+            [[nodiscard]] const Core::IO::DynamicByteBuffer& GetPayload() const
             {
                 return mPayload;
             }
 
 
-            inline void SetPayload(const Core::IO::DynamicByteBuffer& payload)
+			void SetPayload(const Core::IO::DynamicByteBuffer& payload)
             {
                 mPayload = payload;
             }
