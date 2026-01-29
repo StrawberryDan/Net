@@ -1,10 +1,11 @@
 #pragma once
 
-
+// Strawberry Core
 #include "Strawberry/Core/Assert.hpp"
 #include "Strawberry/Core/IO/Logging.hpp"
+// Libfmt
 #include "fmt/core.h"
-#include <iostream>
+// Standard Library
 #include <regex>
 
 
