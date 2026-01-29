@@ -53,9 +53,13 @@ namespace Strawberry::Net::Socket
         tcpSocket.mSocket   = handle;
         tcpSocket.mEndpoint = endpoint;
 
-        DWORD keepAlive = -1;
+#if STRAWBERRY_TARGET_WINDOWS
+        DWORD keepAlive = 1;
+#elif STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
+        int keepAlive = 1;
+#endif
         Core::AssertEQ(
-            setsockopt(tcpSocket.mSocket, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char*>(&keepAlive), sizeof(DWORD)),
+            setsockopt(tcpSocket.mSocket, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char*>(&keepAlive), sizeof(keepAlive)),
             0);
         return tcpSocket;
     }
@@ -118,10 +122,10 @@ namespace Strawberry::Net::Socket
         {
             {mSocket, POLLIN, 0}
         };
-        int pollResult = WSAPoll(fds, 1, 0);
+        ErrorCode pollResult = WSAPoll(fds, 1, 0);
         if (pollResult == -1)
         {
-            auto error = API::GetError();
+            ErrorCode error = API::GetError();
             switch (error)
             {
                 default: Core::Logging::Error("Unknown error on TCP recv: {}", error);

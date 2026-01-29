@@ -97,8 +97,12 @@ namespace Strawberry::Net::Socket
         }
         Core::AssertEQ(listenResult, 0);
 
+#if STRAWBERRY_TARGET_WINDOWS
         DWORD keepAlive = 1;
-        setsockopt(listener.mSocket, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char*>(keepAlive), sizeof(DWORD));
+#elif STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
+        int keepAlive = 1;
+#endif
+        setsockopt(listener.mSocket, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char*>(keepAlive), sizeof(keepAlive));
 
         return std::move(listener);
     }
@@ -177,9 +181,13 @@ namespace Strawberry::Net::Socket
             Core::Unreachable();
         }
 
-        DWORD keepAlive = -1;
+#if STRAWBERRY_TARGET_WINDOWS
+        DWORD keepAlive = 1;
+#elif STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
+        int keepAlive = 1;
+#endif
         Core::AssertEQ(
-            setsockopt(socket.mSocket, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char*>(&keepAlive), sizeof(DWORD)),
+            setsockopt(socket.mSocket, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char*>(&keepAlive), sizeof(keepAlive)),
             0);
 
         return socket;

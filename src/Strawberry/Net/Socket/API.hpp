@@ -2,8 +2,9 @@
 
 #if STRAWBERRY_TARGET_WINDOWS
 #include <winsock2.h>
-#elif STRAWBERRY_TARGET_MACOS || STRAWBERRY_TARGET_LINUX
-    #include <sys/errno.h>
+#elif STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
+    #include <type_traits>
+    #include <cerrno>
 #endif
 
 
@@ -13,7 +14,7 @@ namespace Strawberry::Net::Socket
 #ifdef STRAWBERRY_TARGET_WINDOWS
     using ErrorCode = int;
 #elifdef STRAWBERRY_TARGET_MAC
-    using ErrorCode = errno_t;
+    using ErrorCode = std::decay_t<decltype(errno)>;
 #endif
 
 
