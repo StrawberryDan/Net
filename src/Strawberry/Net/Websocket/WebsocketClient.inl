@@ -244,7 +244,7 @@ namespace Strawberry::Net::Websocket
 
         bool   masked;
         size_t size;
-        if (auto byte = mSocket->ReadAll(1).template Map([](auto x)
+        if (auto byte = mSocket->ReadAll(1).Map([](auto x)
         {
             return x.template Into<uint8_t>();
         }))
