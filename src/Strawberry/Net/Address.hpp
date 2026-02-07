@@ -76,13 +76,14 @@ namespace Strawberry::Net
             IPAddress(IPv6Address address);
 
 
-            // Checking
+            // Checking IP Address class
             [[nodiscard]] inline bool IsIPv4() const
             {
                 return mPayload.IsType<IPv4Address>();
             }
 
 
+            // Checking IP Address class
             [[nodiscard]] inline bool IsIPv6() const
             {
                 return mPayload.IsType<IPv6Address>();
