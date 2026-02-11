@@ -65,7 +65,7 @@ namespace Strawberry::Net::Socket
 
 
 		// Bind Socket.
-		int bindResult = bind(listener.mSocket, peerAddress->ai_addr, sizeof(*peerAddress->ai_addr));
+		int bindResult = bind(listener.mSocket, peerAddress->ai_addr, peerAddress->ai_addrlen);
 		freeaddrinfo(peerAddress);
 #ifdef STRAWBERRY_TARGET_WINDOWS
 		if (bindResult == SOCKET_ERROR)
