@@ -117,4 +117,19 @@ namespace Strawberry::Net
 			return x.GetAddress();
 		}))
 		, mPort(port) {}
+
+
+	std::string Endpoint::ToString() const noexcept
+	{
+		Core::Assert(mHostName.HasValue() || mAddress.HasValue());
+
+		if (mHostName)
+		{
+			return fmt::format("{}:{}", *mHostName, mPort);
+		}
+		else
+		{
+			return fmt::format("{}:{}", mAddress->AsString(), mPort);
+		}
+	}
 } // namespace Strawberry::Net

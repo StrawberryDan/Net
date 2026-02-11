@@ -1,6 +1,4 @@
 #pragma once
-
-
 // Strawberry Net
 #include "Address.hpp"
 #include "Error.hpp"
@@ -42,6 +40,9 @@ namespace Strawberry::Net
 		{
 			return mPort;
 		}
+
+
+		std::string ToString() const noexcept;
 
 	private:
 		Core::Optional<std::string> mHostName;
