@@ -6,6 +6,7 @@
 // Strawberry Core
 
 #include "API.hpp"
+#include "Strawberry/Core/IO/Logging.hpp"
 #include "Strawberry/Core/Markers.hpp"
 
 
@@ -40,28 +41,43 @@ namespace Strawberry::Net::Socket
 
 	Core::Result<TCPListener, Error> TCPListener::Bind(const Endpoint& endpoint)
 	{
+		Core::Logging::Info("Opening TCP Listener at {}", endpoint.ToString());
 		TCPListener listener;
 		listener.mEndpoint = endpoint;
 
-		int addressFamily = endpoint.GetAddress()->IsIPv4() ? AF_INET : endpoint.GetAddress()->IsIPv6() ? AF_INET6 : Core::Unreachable<int>();
+		int addressFamily = endpoint.GetAddress()->IsIPv4() ? AF_INET
+		                  : endpoint.GetAddress()->IsIPv6() ? AF_INET6
+		                  : Core::Unreachable<int>();
 
 		// Create Socket.
 		listener.mSocket = socket(addressFamily, SOCK_STREAM, IPPROTO_TCP);
 		if (listener.mSocket == -1)
 		{
+			Core::Logging::Error("Failed to create socket! Error code: {}", API::GetError());
 			return ErrorSocketCreation {};
 		}
 
 
 		// Get address info
-		addrinfo  hints{.ai_flags = AI_ADDRCONFIG, .ai_family = addressFamily, .ai_socktype = SOCK_STREAM, .ai_protocol = IPPROTO_TCP};
+		addrinfo  hints
+			{
+				.ai_flags = AI_ADDRCONFIG,
+				.ai_family = addressFamily,
+				.ai_socktype = SOCK_STREAM,
+				.ai_protocol = IPPROTO_TCP
+			};
 		addrinfo* peerAddress = nullptr;
-		auto	  addrResult  = getaddrinfo(endpoint.GetAddress()->AsString().c_str(), std::to_string(endpoint.GetPort()).c_str(), &hints, &peerAddress);
+		auto	  addrResult  = getaddrinfo(
+			endpoint.GetAddress()->AsString().c_str(),
+			std::to_string(endpoint.GetPort()).c_str(),
+			&hints, &peerAddress);
 		if (addrResult != 0)
 		{
+			Core::Logging::Error("Failed to resolve the address: {}", endpoint.GetAddress()->AsString());
 			freeaddrinfo(peerAddress);
 			return ErrorAddressResolution {};
 		}
+		Core::AssertEQ(peerAddress->ai_family, addressFamily);
 
 
 		// Bind Socket.
@@ -70,26 +86,28 @@ namespace Strawberry::Net::Socket
 #ifdef STRAWBERRY_TARGET_WINDOWS
 		if (bindResult == SOCKET_ERROR)
 #elifdef STRAWBERRY_TARGET_MAC
-			if (bindResult == -1)
+		if (bindResult == -1)
 #endif
+		{
+			auto error = API::GetError();
+			Core::Logging::Error("Failed to bind socket! Error code returned: {}", error);
+			switch (error)
 			{
-				auto error = API::GetError();
-				switch (error)
-				{
-				default: Core::Unreachable();
-				}
+			default: Core::Unreachable();
 			}
+		}
 
 
 		// Put socket into listen mode.
 		int listenResult = listen(listener.mSocket, SOMAXCONN);
 #ifdef STRAWBERRY_TARGET_WINDOWS
-		if (bindResult == SOCKET_ERROR)
+		if (listenResult == SOCKET_ERROR)
 #elifdef STRAWBERRY_TARGET_MAC
-			if (bindResult == -1)
+			if (listenResult == -1)
 #endif
 			{
 				auto error = API::GetError();
+				Core::Logging::Error("Failed to set socket into listen mode! Error code: {}", error);
 				switch (error)
 				{
 				default: Core::Unreachable();
