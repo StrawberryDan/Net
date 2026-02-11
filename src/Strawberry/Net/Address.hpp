@@ -1,14 +1,12 @@
 #pragma once
-
-
-#include <cstdint>
-#include <string>
-#include <vector>
-
-
+// Strawberry Core
 #include "Strawberry/Core/IO/ByteBuffer.hpp"
 #include "Strawberry/Core/IO/DynamicByteBuffer.hpp"
 #include "Strawberry/Core/Types/Optional.hpp"
+// Standard Library
+#include <cstdint>
+#include <string>
+
 
 namespace Strawberry::Net
 {
