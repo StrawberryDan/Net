@@ -83,11 +83,7 @@ namespace Strawberry::Net::Socket
 		// Bind Socket.
 		int bindResult = bind(listener.mSocket, peerAddress->ai_addr, peerAddress->ai_addrlen);
 		freeaddrinfo(peerAddress);
-#ifdef STRAWBERRY_TARGET_WINDOWS
-		if (bindResult == SOCKET_ERROR)
-#elifdef STRAWBERRY_TARGET_MAC
-		if (bindResult == -1)
-#endif
+		if (bindResult == SOCKET_ERROR_CODE)
 		{
 			auto error = API::GetError();
 			Core::Logging::Error("Failed to bind socket! Error code returned: {}", error);
@@ -100,26 +96,18 @@ namespace Strawberry::Net::Socket
 
 		// Put socket into listen mode.
 		int listenResult = listen(listener.mSocket, SOMAXCONN);
-#ifdef STRAWBERRY_TARGET_WINDOWS
-		if (listenResult == SOCKET_ERROR)
-#elifdef STRAWBERRY_TARGET_MAC
-			if (listenResult == -1)
-#endif
+		if (listenResult == SOCKET_ERROR_CODE)
+		{
+			auto error = API::GetError();
+			Core::Logging::Error("Failed to set socket into listen mode! Error code: {}", error);
+			switch (error)
 			{
-				auto error = API::GetError();
-				Core::Logging::Error("Failed to set socket into listen mode! Error code: {}", error);
-				switch (error)
-				{
-				default: Core::Unreachable();
-				}
+			default: Core::Unreachable();
 			}
+		}
 		Core::AssertEQ(listenResult, 0);
 
-#if STRAWBERRY_TARGET_WINDOWS
-		DWORD keepAlive = 1;
-#elif STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
-		int keepAlive = 1;
-#endif
+		SOCKET_OPTION_TYPE keepAlive = 1;
 		setsockopt(listener.mSocket, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char*>(keepAlive), sizeof(keepAlive));
 
 		return std::move(listener);
