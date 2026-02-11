@@ -10,42 +10,42 @@
 
 namespace Strawberry::Net
 {
-    class Endpoint
-    {
-        public:
-            /// Resolves endpoints from a hostname and a port seperatly.
-            static Core::Result<Endpoint, Error> Resolve(const std::string& hostname, uint16_t port);
-            /// Parses strings of the form [hostname]:[port] and resolves IP
-            static Core::Result<Endpoint, Error> Resolve(const std::string& endpoint);
-            /// Parses strings of the form [hostname]:[port] without resolving IP
-            static Core::Result<Endpoint, Error> Parse(const std::string& endpoint);
+	class Endpoint
+	{
+	public:
+		/// Resolves endpoints from a hostname and a port seperatly.
+		static Core::Result<Endpoint, Error> Resolve(const std::string& hostname, uint16_t port);
+		/// Parses strings of the form [hostname]:[port] and resolves IP
+		static Core::Result<Endpoint, Error> Resolve(const std::string& endpoint);
+		/// Parses strings of the form [hostname]:[port] without resolving IP
+		static Core::Result<Endpoint, Error> Parse(const std::string& endpoint);
 
-        public:
-            Endpoint();
-            Endpoint(const std::string& hostname, uint16_t port);
-            Endpoint(IPAddress address, uint16_t port);
-
-
-            [[nodiscard]] inline const Core::Optional<std::string>& GetHostname() const
-            {
-                return mHostName;
-            }
+	public:
+		Endpoint();
+		Endpoint(const std::string& hostname, uint16_t port);
+		Endpoint(IPAddress address, uint16_t port);
 
 
-            [[nodiscard]] inline Core::Optional<IPAddress> GetAddress() const
-            {
-                return mAddress;
-            }
+		[[nodiscard]] inline const Core::Optional<std::string>& GetHostname() const
+		{
+			return mHostName;
+		}
 
 
-            [[nodiscard]] inline uint16_t GetPort() const
-            {
-                return mPort;
-            }
+		[[nodiscard]] inline Core::Optional<IPAddress> GetAddress() const
+		{
+			return mAddress;
+		}
 
-        private:
-            Core::Optional<std::string> mHostName;
-            Core::Optional<IPAddress>   mAddress;
-            uint16_t                    mPort;
-    };
+
+		[[nodiscard]] inline uint16_t GetPort() const
+		{
+			return mPort;
+		}
+
+	private:
+		Core::Optional<std::string> mHostName;
+		Core::Optional<IPAddress>	mAddress;
+		uint16_t					mPort;
+	};
 } // namespace Strawberry::Net
