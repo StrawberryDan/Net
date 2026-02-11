@@ -49,6 +49,8 @@ namespace Strawberry::Net
 	{
 	public:
 		static Core::Optional<IPv6Address> Parse(const std::string& string);
+		static IPv6Address LocalHost() noexcept;
+
 
 	public:
 		IPv6Address(const Core::IO::ByteBuffer<16>& bytes)

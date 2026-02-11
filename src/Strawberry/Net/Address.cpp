@@ -2,6 +2,7 @@
 #include "Strawberry/Net/Address.hpp"
 // Strawberry Core
 #include "Strawberry/Core/Assert.hpp"
+#include "Strawberry/Core/IO/ByteBuffer.hpp"
 #include "Strawberry/Core/Markers.hpp"
 // OS-Level Networkng Headers
 #if STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
@@ -65,6 +66,14 @@ namespace Strawberry::Net
 		{
 			return {};
 		}
+	}
+
+
+	IPv6Address IPv6Address::LocalHost() noexcept
+	{
+		Core::IO::ByteBuffer<16> bytes{};
+		bytes[15] = 1;
+		return IPv6Address(bytes);
 	}
 
 
