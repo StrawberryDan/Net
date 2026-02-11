@@ -31,6 +31,12 @@ namespace Strawberry::Net
 	}
 
 
+	IPv4Address IPv4Address::LocalHost() noexcept
+	{
+		return IPv4Address(127, 0, 0, 1);
+	}
+
+
 	Core::IO::ByteBuffer<4> IPv4Address::AsBytes() const
 	{
 		return mData;

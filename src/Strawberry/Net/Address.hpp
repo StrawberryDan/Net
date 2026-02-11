@@ -15,7 +15,7 @@ namespace Strawberry::Net
 	public:
 		// Static constructors
 		static Core::Optional<IPv4Address> Parse(const std::string& data);
-
+		static IPv4Address LocalHost() noexcept;
 
 		public:
 		// Constructors
