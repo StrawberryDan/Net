@@ -54,7 +54,7 @@ namespace Strawberry::Net::Socket
 
 		[[nodiscard]] bool								  Poll() const;
 		[[nodiscard]] Core::Result<UDPPacket, Error>	  Receive();
-		[[nodiscard]] Core::Result<void, Core::IO::Error> Send(const Endpoint& endpoint, const Core::IO::DynamicByteBuffer& bytes) const;
+		[[nodiscard]] Core::Result<void, Error> Send(const Endpoint& endpoint, const Core::IO::DynamicByteBuffer& bytes) const;
 
 	private:
 		SocketHandle             mSocket;

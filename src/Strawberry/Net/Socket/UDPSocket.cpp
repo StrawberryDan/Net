@@ -32,6 +32,7 @@ namespace Strawberry::Net::Socket
 		auto handle = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
 		if (handle == -1)
 		{
+			Core::Logging::Error("Failed to create dual band UDP socket!");
 			return ErrorSocketCreation {};
 		}
 
@@ -53,6 +54,7 @@ namespace Strawberry::Net::Socket
 		auto handle = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 		if (handle == -1)
 		{
+			Core::Logging::Error("Failed to create IPv4 UDP socket!");
 			return ErrorSocketCreation {};
 		}
 
@@ -67,6 +69,7 @@ namespace Strawberry::Net::Socket
 		auto handle = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
 		if (handle == -1)
 		{
+			Core::Logging::Error("Failed to create IPv6 UDP socket!");
 			return ErrorSocketCreation {};
 		}
 
@@ -81,7 +84,8 @@ namespace Strawberry::Net::Socket
 
 
 	UDPSocket::UDPSocket(UDPSocket&& other) noexcept
-		: mSocket(std::exchange(other.mSocket, -1)) {}
+		: mSocket(std::exchange(other.mSocket, -1))
+		, mPort(std::move(other.mPort)) {}
 
 
 	UDPSocket& UDPSocket::operator=(UDPSocket&& other) noexcept
@@ -100,55 +104,42 @@ namespace Strawberry::Net::Socket
 	{
 		if (mSocket != -1)
 		{
-#if STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
-			close(mSocket);
-#elif STRAWBERRY_TARGET_WINDOWS
-			closesocket(mSocket);
-#else
-			Core::Unreachable();
-#endif
+			CLOSE_SOCKET_FUNCTION(mSocket);
 		}
 	}
 
 
 	bool UDPSocket::Poll() const
 	{
-#if STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
-		pollfd fds[] = {
-			{mSocket, POLLIN, 0}
+		SOCKET_POLL_FD_TYPE fds[] = {
+			{ mSocket, POLLIN, 0}
 		};
 
-		int pollResult = poll(fds, 1, 0);
-		Core::Assert(pollResult >= 0);
+		int pollResult = SOCKET_POLL_FUNCTION(fds, 1, 0);
+		if (pollResult <= 0)
+		{
+			Core::Logging::Error("Error when polling TCP socket! Error code: {}", API::GetError());
+			return false;
+		}
+
 		return static_cast<bool>(fds[0].revents & POLLIN);
-#elif STRAWBERRY_TARGET_WINDOWS
-		WSAPOLLFD fds[] =
-			{
-				{mSocket, POLLIN, 0}
-			};
-		int pollResult = WSAPoll(fds, 1, 0);
-		Core::Assert(pollResult >= 0);
-		return static_cast<bool>(fds[0].revents & POLLIN);
-#else
-		Core::Unreachable();
-#endif
 	}
 
 	Core::Result<void, Error> UDPSocket::Bind(uint16_t portNumber) noexcept
 	{
-		Core::Logging::Info("Binding UDP Socket to port {}", portNumber);
+		Core::Logging::Info("Binding UDP Socket ({}) to port {}", mSocket, portNumber);
 
 
 		addrinfo hints
-			{
-				.ai_flags = AI_ADDRCONFIG,
-				.ai_family = AF_UNSPEC,
-				.ai_socktype = SOCK_DGRAM,
-				.ai_protocol = IPPROTO_UDP
-			};
+		{
+			.ai_flags = AI_ADDRCONFIG,
+			.ai_family = AF_UNSPEC,
+			.ai_socktype = SOCK_DGRAM,
+			.ai_protocol = IPPROTO_UDP
+		};
 		addrinfo* addressInfo = nullptr;
-
 		SOCKET_ERROR_CODE_TYPE error = 0;
+
 
 		error = getaddrinfo("::", std::to_string(portNumber).c_str(), &hints, &addressInfo);
 		if (error != 0)
@@ -157,19 +148,23 @@ namespace Strawberry::Net::Socket
 			Core::Logging::Error("Failed to get address info for [::] at port {}", portNumber);
 			return ErrorSystem{};
 		}
+
+
 		error = bind(mSocket, addressInfo->ai_addr, addressInfo->ai_addrlen);
 		if (error == SOCKET_ERROR_CODE)
 		{
 			Core::Logging::Error("Failed to bind UDP socket to port {}", portNumber);
-			switch (API::GetError())
+			switch (auto error = API::GetError())
 			{
-			case EADDRINUSE: return ErrorAddressInUse{};
-			default: Core::Unreachable();
+			default:
+				Core::Logging::Error("Unhandled error code in UDPSocket::Bind(). Code: {}.", error);
+				return ErrorUnknown{};
 			}
-			return ErrorSocketBinding{};
 		}
 
 		freeaddrinfo(addressInfo);
+
+		mPort = portNumber;
 		return Core::Success;
 	}
 
@@ -211,14 +206,16 @@ namespace Strawberry::Net::Socket
 				.contents = Core::IO::DynamicByteBuffer(mBuffer.Data(), bytesRead)
 			};
 		}
-		else
+		else switch (auto error = API::GetError())
 		{
-			Core::Unreachable();
+		default:
+			Core::Logging::Error("Unhandled error code when calling recvfrom in UDPSocket::Receive. Code: {}.", error);
+			return ErrorUnknown{};
 		}
 	}
 
 
-	Core::Result<void, Core::IO::Error> UDPSocket::Send(const Endpoint& endpoint, const Core::IO::DynamicByteBuffer& bytes) const
+	Core::Result<void, Error> UDPSocket::Send(const Endpoint& endpoint, const Core::IO::DynamicByteBuffer& bytes) const
 	{
 		addrinfo  hints{.ai_flags = AI_ADDRCONFIG, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
 		addrinfo* peer	 = nullptr;
@@ -231,16 +228,11 @@ namespace Strawberry::Net::Socket
 			auto sendResult = sendto(mSocket, reinterpret_cast<const char*>(bytes.Data()), bytes.Size(), 0, peer->ai_addr, peer->ai_addrlen);
 			if (sendResult <= 0)
 			{
-				auto error = API::GetError();
-				switch (error)
+				switch (auto error = API::GetError())
 				{
-					// If socket buffer is full, give it a chance to empty and try again
-				case ErrorCodes::NoBufferSpace:
-					std::this_thread::yield();
-					continue;
 				default:
-					Core::Logging::Error("Unknown error on UDP sendto: {}", error);
-					Core::Unreachable();
+					Core::Logging::Error("Unhandled error code when calling sendto in UDPSocket::Send. Code: {}.", error);
+					return ErrorUnknown{};
 				}
 			}
 
