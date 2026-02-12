@@ -11,12 +11,10 @@
 #include "Strawberry/Core/Markers.hpp"
 // Standard Library
 #include <cerrno>
-
-
 // Platform specific networking headers
-#ifdef STRAWBERRY_TARGET_WINDOWS
+#if STRAWBERRY_TARGET_WINDOWS
 #include <ws2tcpip.h>
-#elifdef STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
+#elif STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <netdb.h>
