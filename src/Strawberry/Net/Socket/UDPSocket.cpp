@@ -153,6 +153,7 @@ namespace Strawberry::Net::Socket
 		error = getaddrinfo("::", std::to_string(portNumber).c_str(), &hints, &addressInfo);
 		if (error != 0)
 		{
+			freeaddrinfo(addressInfo);
 			Core::Logging::Error("Failed to get address info for [::] at port {}", portNumber);
 			return ErrorSystem{};
 		}
@@ -168,6 +169,7 @@ namespace Strawberry::Net::Socket
 			return ErrorSocketBinding{};
 		}
 
+		freeaddrinfo(addressInfo);
 		return Core::Success;
 	}
 
