@@ -1,10 +1,14 @@
 // Strawberry Net
 #include "Strawberry/Net/Socket/UDPSocket.hpp"
+#include "Strawberry/Net/Error.hpp"
 #include "Strawberry/Net/Socket/API.hpp"
+#include "Strawberry/Net/Socket/Platform.hpp"
 // Strawberry Core
 #include "Strawberry/Core/Assert.hpp"
 #include "Strawberry/Core/Markers.hpp"
 #include <Strawberry/Core/IO/Logging.hpp>
+#include <cerrno>
+#include <netinet/in.h>
 // OS-Level Networking Headers
 #if STRAWBERRY_TARGET_WINDOWS
 #include <winsock2.h>
@@ -17,7 +21,9 @@
 #include <unistd.h>
 #endif // STRAWBERRY_TARGET_WINDOWS
 // Standard Library
+#include <cstdint>
 #include <thread>
+
 
 namespace Strawberry::Net::Socket
 {
@@ -128,9 +134,49 @@ namespace Strawberry::Net::Socket
 #endif
 	}
 
+	Core::Result<void, Error> UDPSocket::Bind(uint16_t portNumber) noexcept
+	{
+		Core::Logging::Info("Binding UDP Socket to port {}", portNumber);
+
+
+		addrinfo hints
+			{
+				.ai_flags = AI_ADDRCONFIG,
+				.ai_family = AF_UNSPEC,
+				.ai_socktype = SOCK_DGRAM,
+				.ai_protocol = IPPROTO_UDP
+			};
+		addrinfo* addressInfo = nullptr;
+
+		SOCKET_ERROR_CODE_TYPE error = 0;
+
+		error = getaddrinfo("::", std::to_string(portNumber).c_str(), &hints, &addressInfo);
+		if (error != 0)
+		{
+			Core::Logging::Error("Failed to get address info for [::] at port {}", portNumber);
+			return ErrorSystem{};
+		}
+		error = bind(mSocket, addressInfo->ai_addr, addressInfo->ai_addrlen);
+		if (error == SOCKET_ERROR_CODE)
+		{
+			Core::Logging::Error("Failed to bind UDP socket to port {}", portNumber);
+			switch (API::GetError())
+			{
+			case EADDRINUSE: return ErrorAddressInUse{};
+			default: Core::Unreachable();
+			}
+			return ErrorSocketBinding{};
+		}
+
+		return Core::Success;
+	}
 
 	Core::Result<UDPPacket, Error> UDPSocket::Receive()
 	{
+		// Cannot receive packets if we have not bound ourselves to a port.
+		Core::Logging::ErrorIf(!mPort.HasValue(), "Attempted to receive a packet on an unbound UDP port!");
+		Core::Assert(mPort.HasValue());
+
 		sockaddr_storage peer{};
 		socklen_t		 peerLen   = 0;
 		auto			 bytesRead = recvfrom(mSocket,

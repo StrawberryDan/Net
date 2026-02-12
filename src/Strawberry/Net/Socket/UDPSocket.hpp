@@ -48,15 +48,19 @@ namespace Strawberry::Net::Socket
 		UDPSocket& operator=(UDPSocket&& other) noexcept;
 		~UDPSocket();
 
-	
+
+		Core::Result<void, Error> Bind(uint16_t portNumber) noexcept;
+
+
 		[[nodiscard]] bool								  Poll() const;
 		[[nodiscard]] Core::Result<UDPPacket, Error>	  Receive();
 		[[nodiscard]] Core::Result<void, Core::IO::Error> Send(const Endpoint& endpoint, const Core::IO::DynamicByteBuffer& bytes) const;
 
 	private:
-		SocketHandle mSocket;
+		SocketHandle             mSocket;
+		Core::Optional<uint16_t> mPort;
 
-		static constexpr size_t			  BUFFER_SIZE = 25536;
+		static constexpr size_t           BUFFER_SIZE = 25536;
 		Core::IO::ByteBuffer<BUFFER_SIZE> mBuffer;
 	};
 } // namespace Strawberry::Net::Socket
