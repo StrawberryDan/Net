@@ -120,11 +120,11 @@ namespace Strawberry::Net
 	{
 		if (auto addr = AsIPv4())
 		{
-			return Core::IO::DynamicByteBuffer(addr->AsBytes());
+			return addr->AsBytes().ToDynamic();
 		}
 		else if (auto addr = AsIPv6())
 		{
-			return Core::IO::DynamicByteBuffer(addr->AsBytes());
+			return addr->AsBytes().ToDynamic();
 		}
 		else
 		{
