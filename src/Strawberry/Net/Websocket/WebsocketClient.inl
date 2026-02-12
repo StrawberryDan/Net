@@ -65,7 +65,7 @@ namespace Strawberry::Net::Websocket
     std::string WebsocketClientBase<S>::GenerateNonce()
     {
         std::random_device          randomDevice;
-        Core::IO::DynamicByteBuffer nonce(16);
+        Core::IO::DynamicByteBuffer nonce = Core::IO::DynamicByteBuffer::WithCapacity(16);
         while (nonce.Size() < 16)
         {
             auto val = randomDevice();
