@@ -17,6 +17,9 @@ namespace Strawberry::Net
 		static Core::Result<Endpoint, Error> Resolve(const std::string& endpoint);
 		/// Parses strings of the form [hostname]:[port] without resolving IP
 		static Core::Result<Endpoint, Error> Parse(const std::string& endpoint);
+		/// Static shorthands for creating local host endpoints
+		static Endpoint LocalHostIPv4(uint16_t portNumber) noexcept;
+		static Endpoint LocalHostIPv6(uint16_t portNumber) noexcept;
 
 	public:
 		Endpoint();

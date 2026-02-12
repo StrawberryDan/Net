@@ -1,5 +1,7 @@
 // StrawberryNet
 #include "Strawberry/Net/Endpoint.hpp"
+#include "Strawberry/Net/Address.hpp"
+#include <cstdint>
 // OS-Level Networking Headers
 #if STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
 #include <netdb.h>
@@ -96,6 +98,18 @@ namespace Strawberry::Net
 		}
 
 		return Endpoint(hostname, port);
+	}
+
+
+	Endpoint Endpoint::LocalHostIPv4(uint16_t portNumber) noexcept
+	{
+		return Endpoint(IPv4Address::LocalHost(), portNumber);
+	}
+
+
+	Endpoint Endpoint::LocalHostIPv6(uint16_t portNumber) noexcept
+	{
+		return Endpoint(IPv6Address::LocalHost(), portNumber);
 	}
 
 
