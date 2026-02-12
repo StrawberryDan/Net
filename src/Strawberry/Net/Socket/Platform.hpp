@@ -40,3 +40,11 @@
 #elif STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
 #define SOCKET_POLL_FUNCTION poll
 #endif
+
+
+// Cross-platform close socket function macro
+#if STRAWBERRY_TARGET_WINDOWS
+#define CLOSE_SOCKET_FUNCTION closesocket
+#elif STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
+#define CLOSE_SOCKET_FUNCTION close
+#endif
