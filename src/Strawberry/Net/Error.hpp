@@ -22,6 +22,7 @@ namespace Strawberry::Net
 	struct ErrorOpenSSL {};
 	struct ErrorSystem {};
 	struct ErrorAddressInUse{};
+	struct ErrorMessageSize{};
 	struct ErrorUnknown{};
 
 
@@ -43,5 +44,6 @@ namespace Strawberry::Net
 		ErrorOpenSSL,
 		ErrorSystem,
 		ErrorAddressInUse,
+		ErrorMessageSize,
 		ErrorUnknown>;
 }
