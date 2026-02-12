@@ -2,17 +2,21 @@
 //	Includes
 //----------------------------------------------------------------------------------------------------------------------
 // Strawberry Net
-#include "TCPListener.hpp"
+#include "Strawberry/Net/Socket/TCPListener.hpp"
+#include "Strawberry/Net/Error.hpp"
+#include "Strawberry/Net/Socket/Platform.hpp"
 // Strawberry Core
-
 #include "API.hpp"
 #include "Strawberry/Core/IO/Logging.hpp"
 #include "Strawberry/Core/Markers.hpp"
+// Standard Library
+#include <cerrno>
 
 
+// Platform specific networking headers
 #ifdef STRAWBERRY_TARGET_WINDOWS
 #include <ws2tcpip.h>
-#elifdef STRAWBERRY_TARGET_MAC
+#elifdef STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <netdb.h>
