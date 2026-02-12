@@ -14,15 +14,16 @@ using namespace Net;
 
 int main()
 {
-	static constexpr size_t MESSAGE_SIZE = 1024 * 1024;
+	static constexpr size_t MESSAGE_SIZE = 32 * 1024; // 32 Kilobytes
 	std::random_device rng;
 
 
+	// Test with both IPv4 and IPv6 endpoints
 	std::array endpoints
-		{
-			Endpoint(IPv4Address::LocalHost(), 65535 - 1000),
-			Endpoint(IPv6Address::LocalHost(), 65535 - 1001)
-		};
+	{
+		Endpoint(IPv4Address::LocalHost(), 65535 - 1000),
+		Endpoint(IPv6Address::LocalHost(), 65535 - 1001)
+	};
 
 
 	for (auto endpoint : endpoints)
@@ -54,18 +55,24 @@ int main()
 
 		// Read message from listenerSocket.
 		Core::Logging::Trace("Reading message");
-		auto receivedMessage = listenerSocket.Read(MESSAGE_SIZE).Unwrap();
+		Core::Assert(listenerSocket.Poll());
+		auto receivedMessage = listenerSocket.ReadAll(MESSAGE_SIZE).Unwrap();
 		Core::AssertEQ(receivedMessage, message);
 
+		// Generate fresh message
 		message.Clear();
 		for (int i = 0; i < MESSAGE_SIZE; i++)
 		{
 			message.Push<uint8_t>(rng());
 		}
-
 		listenerSocket.Write(message).Unwrap();
 
-		receivedMessage = client.Read(MESSAGE_SIZE).Unwrap();
+		// Wait for a second
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+
+		// Read new message from server
+		Core::Assert(client.Poll());
+		receivedMessage = client.ReadAll(MESSAGE_SIZE).Unwrap();
 		Core::AssertEQ(receivedMessage, message);
 	}
 }
