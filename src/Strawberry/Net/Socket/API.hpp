@@ -1,38 +1,15 @@
 #pragma once
-
+// Standard library
+#include <atomic>
 #if STRAWBERRY_TARGET_WINDOWS
 #include <winsock2.h>
 #elif STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
-#include <type_traits>
 #include <cerrno>
 #endif
 
 
 namespace Strawberry::Net::Socket
 {
-
-#ifdef STRAWBERRY_TARGET_WINDOWS
-	using ErrorCode = int;
-#elifdef STRAWBERRY_TARGET_MAC
-	using ErrorCode = std::decay_t<decltype(errno)>;
-#endif
-
-
-	namespace ErrorCodes {
-		enum : ErrorCode
-			{
-#ifdef STRAWBERRY_TARGET_WINDOWS
-				ConnectionReset = WSAECONNRESET,
-				NoBufferSpace	= WSAENOBUFS,
-#elifdef STRAWBERRY_TARGET_MAC
-				ConnectionReset = ECONNRESET,
-				NoBufferSpace	= ENOBUFS,
-#endif
-			};
-	}
-
-
-
 	class API
 	{
 	public:
@@ -41,9 +18,9 @@ namespace Strawberry::Net::Socket
 
 		static bool IsInitialised();
 
-		static ErrorCode GetError();
+		static int GetError();
 
 	private:
-		static bool sIsInitialised;
+		static std::atomic<bool> sIsInitialised;
 	};
 } // namespace Strawberry::Net::Socket

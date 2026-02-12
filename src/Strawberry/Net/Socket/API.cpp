@@ -1,57 +1,58 @@
+// Strawberry dnet
 #include "Strawberry/Net/Socket/API.hpp"
-
-
-#include "Strawberry/Core/IO/Logging.hpp"
-
-
-#include "Strawberry/Core/Assert.hpp"
+// Windows includes
 #if STRAWBERRY_TARGET_WINDOWS
+// Strawberry Core
+#include "Strawberry/Core/IO/Logging.hpp"
+#include "Strawberry/Core/Assert.hpp"
+// Win32
 #include <winsock2.h>
 #endif
 
 
 namespace Strawberry::Net::Socket
 {
-    bool API::sIsInitialised = false;
+	std::atomic<bool> API::sIsInitialised = false;
 
 
-    void API::Initialise()
-    {
-        if (!IsInitialised())
-        {
+	void API::Initialise()
+	{
+		if (!IsInitialised())
+		{
 #if STRAWBERRY_TARGET_WINDOWS
-            WSAData wsaData;
-            auto    err = WSAStartup(MAKEWORD(2, 2), &wsaData);
-            Core::Assert(err == 0);
+			WSAData wsaData;
+			auto	err = WSAStartup(MAKEWORD(2, 2), &wsaData);
+			Core::Assert(err == 0);
 #endif
-            sIsInitialised = true;
-        }
-    }
+			sIsInitialised = true;
+		}
+	}
 
 
-    void API::Terminate()
-    {
-        if (IsInitialised())
-        {
+	void API::Terminate()
+	{
+		if (IsInitialised())
+		{
 #if STRAWBERRY_TARGET_WINDOWS
-            WSACleanup();
+			WSACleanup();
 #endif
-            sIsInitialised = false;
-        }
-    }
+			sIsInitialised = false;
+		}
+	}
 
 
-    bool API::IsInitialised()
-    {
-        return sIsInitialised;
-    }
+	bool API::IsInitialised()
+	{
+		return sIsInitialised;
+	}
 
-    ErrorCode API::GetError()
-    {
-#ifdef STRAWBERRY_TARGET_WINDOWS
-        return WSAGetLastError();
-#elifdef STRAWBERRY_TARGET_MAC
-        return errno;
+
+	int API::GetError()
+	{
+#if STRAWBERRY_TARGET_WINDOWS
+		return WSAGetLastError();
+#elif STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
+		return errno;
 #endif
-    }
+	}
 } // namespace Strawberry::Net::Socket
