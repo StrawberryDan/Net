@@ -68,5 +68,7 @@ if (NOT TARGET StrawberryNet)
     endif ()
 
     new_strawberry_tests(NAME "StrawberryNet" TESTS
-        test/TCP.cpp)
+      test/TCP.cpp
+      test/UDP.cpp
+    )
 endif ()

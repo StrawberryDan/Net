@@ -1,5 +1,6 @@
 // Strawberry Net
 #include "Strawberry/Net/Socket/UDPSocket.hpp"
+#include "Strawberry/Net/Address.hpp"
 #include "Strawberry/Net/Error.hpp"
 #include "Strawberry/Net/Socket/API.hpp"
 #include "Strawberry/Net/Socket/Platform.hpp"
@@ -45,6 +46,7 @@ namespace Strawberry::Net::Socket
 
 		UDPSocket	client;
 		client.mSocket = handle;
+		client.mIPv6 = true;
 		return client;
 	}
 
@@ -60,6 +62,7 @@ namespace Strawberry::Net::Socket
 
 		UDPSocket client;
 		client.mSocket = handle;
+		client.mIPv6 = false;
 		return client;
 	}
 
@@ -75,6 +78,7 @@ namespace Strawberry::Net::Socket
 
 		UDPSocket client;
 		client.mSocket = handle;
+		client.mIPv6 = true;
 		return client;
 	}
 
@@ -85,7 +89,8 @@ namespace Strawberry::Net::Socket
 
 	UDPSocket::UDPSocket(UDPSocket&& other) noexcept
 		: mSocket(std::exchange(other.mSocket, -1))
-		, mPort(std::move(other.mPort)) {}
+		, mPort(std::move(other.mPort))
+		, mIPv6(other.mIPv6) {}
 
 
 	UDPSocket& UDPSocket::operator=(UDPSocket&& other) noexcept
@@ -133,7 +138,7 @@ namespace Strawberry::Net::Socket
 		addrinfo hints
 		{
 			.ai_flags = AI_ADDRCONFIG,
-			.ai_family = AF_UNSPEC,
+			.ai_family = mIPv6 ? AF_INET6 : AF_INET,
 			.ai_socktype = SOCK_DGRAM,
 			.ai_protocol = IPPROTO_UDP
 		};
@@ -141,11 +146,12 @@ namespace Strawberry::Net::Socket
 		SOCKET_ERROR_CODE_TYPE error = 0;
 
 
-		error = getaddrinfo("::", std::to_string(portNumber).c_str(), &hints, &addressInfo);
+		const char* address = mIPv6 ? "::" : "127.0.0.1";
+		error = getaddrinfo(address, std::to_string(portNumber).c_str(), &hints, &addressInfo);
 		if (error != 0)
 		{
 			freeaddrinfo(addressInfo);
-			Core::Logging::Error("Failed to get address info for [::] at port {}", portNumber);
+			Core::Logging::Error("Failed to get address info at port {}", portNumber);
 			return ErrorSystem{};
 		}
 
@@ -175,7 +181,7 @@ namespace Strawberry::Net::Socket
 		Core::Assert(mPort.HasValue());
 
 		sockaddr_storage peer{};
-		socklen_t		 peerLen   = 0;
+		socklen_t		 peerLen   = sizeof(sockaddr_storage);
 		auto			 bytesRead = recvfrom(mSocket,
 											  reinterpret_cast<char*>(mBuffer.Data()),
 											  mBuffer.Size(),
@@ -198,6 +204,7 @@ namespace Strawberry::Net::Socket
 			}
 			else
 			{
+				Core::Logging::Error("Invalid value for ss_family returned from recvfrom!");
 				Core::Unreachable();
 			}
 
@@ -217,30 +224,43 @@ namespace Strawberry::Net::Socket
 
 	Core::Result<void, Error> UDPSocket::Send(const Endpoint& endpoint, const Core::IO::DynamicByteBuffer& bytes) const
 	{
-		addrinfo  hints{.ai_flags = AI_ADDRCONFIG, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
+		addrinfo  hints
+		{
+			.ai_flags = AI_ADDRCONFIG | (mIPv6 ? AI_V4MAPPED : 0),
+			.ai_socktype = SOCK_DGRAM,
+			.ai_protocol = IPPROTO_UDP,
+			.ai_family = mIPv6 ? AF_INET6 : AF_INET,
+		};
+
+		if (!mIPv6 && endpoint.GetAddress()->IsIPv6())
+		{
+			Core::Logging::Error("Attempting to send UDP packet to IPv6 endpoint on an IPv4 UDP socket!");
+			Core::Unreachable();
+		}
+
 		addrinfo* peer	 = nullptr;
 		auto	  result = getaddrinfo(endpoint.GetAddress()->AsString().c_str(), std::to_string(endpoint.GetPort()).c_str(), &hints, &peer);
 		Core::Assert(result == 0);
 
 
-		while (true)
+		auto sendResult = sendto(mSocket, reinterpret_cast<const char*>(bytes.Data()), bytes.Size(), 0, peer->ai_addr, peer->ai_addrlen);
+		if (sendResult <= 0)
 		{
-			auto sendResult = sendto(mSocket, reinterpret_cast<const char*>(bytes.Data()), bytes.Size(), 0, peer->ai_addr, peer->ai_addrlen);
-			if (sendResult <= 0)
+			switch (auto error = API::GetError())
 			{
-				switch (auto error = API::GetError())
-				{
-				default:
-					Core::Logging::Error("Unhandled error code when calling sendto in UDPSocket::Send. Code: {}.", error);
-					return ErrorUnknown{};
-				}
+			case SOCKET_ERROR_TYPE_CODE(EINVAL):
+				Core::Logging::Error("Invalid argument passed to sendto in UDPSocket::Send! {}", peer->ai_addrlen);
+				Core::Unreachable();
+			case SOCKET_ERROR_TYPE_CODE(EMSGSIZE):
+				Core::Logging::Error("Attempted to send message larger than max UDP packet size that this path allows! Message size = {}.", bytes.Size());
+				return ErrorMessageSize{};
+			default:
+				Core::Logging::Error("Unhandled error code when calling sendto in UDPSocket::Send. Code: {}.", error);
+				return ErrorUnknown{};
 			}
-
-
-			Core::AssertEQ(sendResult, bytes.Size());
-			break;
 		}
 
+		Core::AssertEQ(sendResult, bytes.Size());
 		freeaddrinfo(peer);
 		return Core::Success;
 	}

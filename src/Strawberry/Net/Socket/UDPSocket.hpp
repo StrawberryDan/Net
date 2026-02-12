@@ -41,7 +41,6 @@ namespace Strawberry::Net::Socket
 		static Core::Result<UDPSocket, Error> CreateIPv6();
 
 	public:
-		UDPSocket();
 		UDPSocket(const UDPSocket& other) = delete;
 		UDPSocket(UDPSocket&& other) noexcept;
 		UDPSocket& operator=(const UDPSocket& other) = delete;
@@ -56,9 +55,13 @@ namespace Strawberry::Net::Socket
 		[[nodiscard]] Core::Result<UDPPacket, Error>	  Receive();
 		[[nodiscard]] Core::Result<void, Error> Send(const Endpoint& endpoint, const Core::IO::DynamicByteBuffer& bytes) const;
 
-	private:
+private:
+		UDPSocket();
+
+		
 		SocketHandle             mSocket;
 		Core::Optional<uint16_t> mPort;
+		bool                     mIPv6;
 
 		static constexpr size_t           BUFFER_SIZE = 25536;
 		Core::IO::ByteBuffer<BUFFER_SIZE> mBuffer;
