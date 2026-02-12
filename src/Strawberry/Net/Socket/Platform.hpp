@@ -23,3 +23,20 @@
 #elif STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
 #define SOCKET_OPTION_TYPE int
 #endif
+
+
+// Cross-platform macro for the poll function
+// argument structure type.
+#if STRAWBERRY_TARGET_WINDOWS
+#define SOCKET_POLL_FD_TYPE WSAPOLLFD
+#elif STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
+#define SOCKET_POLL_FD_TYPE pollfd
+#endif
+
+
+// Cross-platform macro for the poll function
+#if STRAWBERRY_TARGET_WINDOWS
+#define SOCKET_POLL_FUNCTION WSAPoll
+#elif STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
+#define SOCKET_POLL_FUNCTION poll
+#endif
