@@ -89,6 +89,7 @@ namespace Strawberry::Net::Socket
 			Core::Logging::Error("Failed to bind socket! Error code returned: {}", error);
 			switch (error)
 			{
+			case EADDRINUSE: return ErrorAddressInUse{};
 			default: Core::Unreachable();
 			}
 		}
