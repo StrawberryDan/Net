@@ -69,6 +69,20 @@ namespace Strawberry::Net
 	}
 
 
+	IPv6Address IPv6Address::FromIPv4(IPv4Address inputAddress) noexcept
+	{
+		auto inputBytes = inputAddress.AsBytes();
+		IPv6Address result = IPv6Address::LocalHost();
+		result.mData[10] = 255;
+		result.mData[11] = 255;
+		result.mData[12] = inputBytes[0];
+		result.mData[13] = inputBytes[1];
+		result.mData[14] = inputBytes[2];
+		result.mData[15] = inputBytes[3];
+		return result;
+	}
+
+
 	IPv6Address IPv6Address::LocalHost() noexcept
 	{
 		Core::IO::ByteBuffer<16> bytes{};
