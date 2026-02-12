@@ -48,3 +48,13 @@
 #elif STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
 #define CLOSE_SOCKET_FUNCTION close
 #endif
+
+
+// Macro for platform specific error codes.
+//
+// On windows, error codes are prefixed with WSA.
+#if STRAWBERRY_TARGET_WINDOWS
+#define SOCKET_ERROR_TYPE_CODE(CODE) WSA ## CODE
+#elif STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
+#define SOCKET_ERROR_TYPE_CODE(CODE) CODE
+#endif
