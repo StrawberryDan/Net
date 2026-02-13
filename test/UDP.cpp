@@ -36,6 +36,12 @@ void Wait()
 
 int main()
 {
+	// Open two sockets on localhost.
+	// Bind them to different ports.
+	// Send two random messages, one in each direction.
+	// Succeeds if the messages are transmitted without error.
+
+
 	static constexpr uint16_t portA = 65535 - 1000,
 	                          portB = 65535 - 1001;
 
@@ -55,6 +61,7 @@ int main()
 	Core::Logging::Trace("Sending message A");
 	clientA.Send(Endpoint::LocalHostIPv4(portB), messageA).Unwrap();
 	Wait();
+	Core::Assert(clientB.Poll());
 	Core::Logging::Trace("Receiving message A");
 	auto receivedA = clientB.Receive().Unwrap();
 	Core::AssertEQ(receivedA.contents, messageA);
@@ -62,6 +69,7 @@ int main()
 	Core::Logging::Trace("Sending message B");
 	clientB.Send(Endpoint::LocalHostIPv4(portA), messageB).Unwrap();
 	Wait();
+	Core::Assert(clientA.Poll());
 	Core::Logging::Trace("Receiving message B");
 	auto receivedB = clientA.Receive().Unwrap();
 	Core::AssertEQ(receivedB.contents, messageB);
