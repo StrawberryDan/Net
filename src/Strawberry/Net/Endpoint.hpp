@@ -45,7 +45,8 @@ namespace Strawberry::Net
 		}
 
 
-		std::string ToString() const noexcept;
+		[[nodiscard]] std::string ToString() const noexcept;
+
 
 	private:
 		Core::Optional<std::string> mHostName;
