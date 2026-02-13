@@ -35,7 +35,6 @@ namespace Strawberry::Net::Socket
 		static Core::Result<TCPSocket, Error> Connect(const Endpoint& endpoint);
 
 	public:
-		TCPSocket();
 		TCPSocket(const TCPSocket& other) = delete;
 		TCPSocket(TCPSocket&& other) noexcept;
 		TCPSocket& operator=(const TCPSocket& other) = delete;
@@ -50,6 +49,9 @@ namespace Strawberry::Net::Socket
 		StreamWriteResult  Write(const Core::IO::DynamicByteBuffer& bytes);
 
 	private:
+		TCPSocket(SocketHandle socketHandle, Endpoint endpoint);
+
+
 		SocketHandle mSocket;
 		Endpoint	 mEndpoint;
 	};

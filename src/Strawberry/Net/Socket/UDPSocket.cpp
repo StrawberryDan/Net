@@ -8,6 +8,7 @@
 #include "Strawberry/Core/Assert.hpp"
 #include "Strawberry/Core/Markers.hpp"
 #include <Strawberry/Core/IO/Logging.hpp>
+#include <sys/_types/_socklen_t.h>
 // OS-Level Networking Headers
 #if STRAWBERRY_TARGET_WINDOWS
 #include <winsock2.h>
@@ -255,21 +256,24 @@ namespace Strawberry::Net::Socket
 			.ai_family = mIPv6 ? AF_INET6 : AF_INET,
 		};
 
-
-		// Get peer
-		addrinfo* peer	 = nullptr;
-		auto	  result = getaddrinfo(endpoint.GetAddress()->AsString().c_str(), std::to_string(endpoint.GetPort()).c_str(), &hints, &peer);
-		Core::Assert(result == 0);
-
+		sockaddr_storage peer = endpoint.GetPlatformRepresentation(mIPv6);
+		socklen_t peerLen = 0;
+		switch (peer.ss_family)
+		{
+		case AF_INET:  peerLen = sizeof(sockaddr_in);  break;
+		case AF_INET6: peerLen = sizeof(sockaddr_in6); break;
+		default: Core::Unreachable();
+		}
 
 		// Attempt to send message
-		auto sendResult = sendto(mSocket, reinterpret_cast<const char*>(bytes.Data()), bytes.Size(), 0, peer->ai_addr, peer->ai_addrlen);
+		auto sendResult = sendto(mSocket, reinterpret_cast<const char*>(bytes.Data()), bytes.Size(), 0,
+								 (const struct sockaddr*) &peer, peerLen);
 		if (sendResult <= 0)
 		{
 			switch (auto error = API::GetError())
 			{
 			case SOCKET_ERROR_TYPE_CODE(EINVAL):
-				Core::Logging::Error("Invalid argument passed to sendto in UDPSocket::Send! {}", peer->ai_addrlen);
+				Core::Logging::Error("Invalid argument passed to sendto in UDPSocket::Send!");
 				Core::Unreachable();
 			case SOCKET_ERROR_TYPE_CODE(EMSGSIZE):
 				Core::Logging::Error("Attempted to send message larger than max UDP packet size that this path allows! Message size = {}.", bytes.Size());
@@ -281,7 +285,6 @@ namespace Strawberry::Net::Socket
 		}
 
 		Core::AssertEQ(sendResult, bytes.Size());
-		freeaddrinfo(peer);
 		return Core::Success;
 	}
 } // namespace Strawberry::Net::Socket

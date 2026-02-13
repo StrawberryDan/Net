@@ -3,6 +3,8 @@
 //----------------------------------------------------------------------------------------------------------------------
 // Strawberry Net
 #include "Strawberry/Net/Socket/TCPListener.hpp"
+#include "Strawberry/Core/IO/ByteBuffer.hpp"
+#include "Strawberry/Net/Address.hpp"
 #include "Strawberry/Net/Error.hpp"
 #include "Strawberry/Net/Socket/Platform.hpp"
 // Strawberry Core
@@ -29,11 +31,11 @@ namespace Strawberry::Net::Socket
 {
 	static int GetAddressFamily(const Endpoint& endpoint)
 	{
-		if (endpoint.GetAddress()->IsIPv4())
+		if (endpoint.GetAddress().IsIPv4())
 		{
 			return AF_INET;
 		}
-		if (endpoint.GetAddress()->IsIPv6())
+		if (endpoint.GetAddress().IsIPv6())
 		{
 			return AF_INET6;
 		}
@@ -44,21 +46,21 @@ namespace Strawberry::Net::Socket
 	Core::Result<TCPListener, Error> TCPListener::Bind(const Endpoint& endpoint)
 	{
 		Core::Logging::Info("Opening TCP Listener at {}", endpoint.ToString());
-		TCPListener listener;
-		listener.mEndpoint = endpoint;
 
-		int addressFamily = endpoint.GetAddress()->IsIPv4() ? AF_INET
-		                  : endpoint.GetAddress()->IsIPv6() ? AF_INET6
+		int addressFamily = endpoint.GetAddress().IsIPv4() ? AF_INET
+		                  : endpoint.GetAddress().IsIPv6() ? AF_INET6
 		                  : Core::Unreachable<int>();
 
 		// Create Socket.
-		listener.mSocket = socket(addressFamily, SOCK_STREAM, IPPROTO_TCP);
-		if (listener.mSocket == -1)
+		SocketHandle socketHandle = socket(addressFamily, SOCK_STREAM, IPPROTO_TCP);
+		if (socketHandle == -1)
 		{
 			Core::Logging::Error("Failed to create socket! Error code: {}", API::GetError());
 			return ErrorSocketCreation {};
 		}
 
+		// Construct listener object.
+		TCPListener listener(socketHandle, endpoint);
 
 		// Get address info
 		addrinfo  hints
@@ -70,12 +72,12 @@ namespace Strawberry::Net::Socket
 			};
 		addrinfo* peerAddress = nullptr;
 		auto	  addrResult  = getaddrinfo(
-			endpoint.GetAddress()->AsString().c_str(),
+			endpoint.GetAddress().AsString().c_str(),
 			std::to_string(endpoint.GetPort()).c_str(),
 			&hints, &peerAddress);
 		if (addrResult != 0)
 		{
-			Core::Logging::Error("Failed to resolve the address: {}", endpoint.GetAddress()->AsString());
+			Core::Logging::Error("Failed to resolve the address: {}", endpoint.GetAddress().AsString());
 			freeaddrinfo(peerAddress);
 			return ErrorAddressResolution {};
 		}
@@ -117,8 +119,9 @@ namespace Strawberry::Net::Socket
 	}
 
 
-	TCPListener::TCPListener()
-		: mSocket(-1) {}
+	TCPListener::TCPListener(SocketHandle handle, Endpoint endpoint)
+		: mSocket(handle)
+		, mEndpoint(std::move(endpoint)) {}
 
 
 	TCPListener::TCPListener(TCPListener&& other)
@@ -155,50 +158,38 @@ namespace Strawberry::Net::Socket
 
 	Core::Optional<TCPSocket> TCPListener::Accept() const noexcept
 	{
-		TCPSocket socket;
-
 		sockaddr_storage peer{};
 		socklen_t		 peerLen = sizeof(peer);
 
-		socket.mSocket = accept(mSocket, reinterpret_cast<sockaddr*>(&peer), &peerLen);
-#ifdef STRAWBERRY_TARGET_WINDOWS
-		if (socket.mSocket == SOCKET_ERROR)
-#elifdef STRAWBERRY_TARGET_MAC
-			if (socket.mSocket == -1)
-#endif
+		SocketHandle socketHandle = accept(mSocket, reinterpret_cast<sockaddr*>(&peer), &peerLen);
+		if (socketHandle == SOCKET_ERROR_CODE)
+		{
+			auto error = API::GetError();
+			switch (error)
 			{
-				auto error = API::GetError();
-				switch (error)
-				{
-				default: Core::Unreachable();
-				}
+			default: Core::Unreachable();
 			}
+		}
 
 
+		Core::Optional<Endpoint> endpoint;
 		if (peer.ss_family == AF_INET)
 		{
 			auto* sockaddr = reinterpret_cast<sockaddr_in*>(&peer);
-			std::construct_at(&socket.mEndpoint, IPv4Address(Core::IO::ByteBuffer<4>(sockaddr->sin_addr)), sockaddr->sin_port);
+			endpoint.Emplace(IPv4Address(Core::IO::ByteBuffer<4>(sockaddr->sin_addr)), sockaddr->sin_port);
 		}
 		else if (peer.ss_family == AF_INET6)
 		{
 			auto* sockaddr = reinterpret_cast<sockaddr_in6*>(&peer);
-			std::construct_at(&socket.mEndpoint, IPv6Address(Core::IO::ByteBuffer<16>(sockaddr->sin6_addr)), sockaddr->sin6_port);
+			endpoint.Emplace(IPv6Address(Core::IO::ByteBuffer<16>(sockaddr->sin6_addr)), sockaddr->sin6_port);
 		}
-		else
-		{
-			Core::Unreachable();
-		}
+		else Core::Unreachable();
 
-#if STRAWBERRY_TARGET_WINDOWS
-		DWORD keepAlive = 1;
-#elif STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUX
-		int keepAlive = 1;
-#endif
+		SOCKET_OPTION_TYPE keepAlive = 1;
 		Core::AssertEQ(
-			setsockopt(socket.mSocket, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char*>(&keepAlive), sizeof(keepAlive)),
+			setsockopt(socketHandle, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char*>(&keepAlive), sizeof(keepAlive)),
 			0);
 
-		return socket;
+		return TCPSocket(socketHandle, endpoint.Unwrap());
 	}
 }

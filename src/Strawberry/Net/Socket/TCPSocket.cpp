@@ -26,41 +26,36 @@ namespace Strawberry::Net::Socket
 		Core::Logging::Info("Connecting TCP Socket to {}", endpoint.ToString());
 
 
-		TCPSocket tcpSocket;
-
 		addrinfo hints{.ai_flags = AI_ADDRCONFIG, .ai_socktype = SOCK_STREAM, .ai_protocol = IPPROTO_TCP};
-		hints.ai_family = endpoint.GetAddress()->IsIPv4() ? AF_INET
-			: endpoint.GetAddress()->IsIPv6() ? AF_INET6
+		hints.ai_family = endpoint.GetAddress().IsIPv4() ? AF_INET
+			: endpoint.GetAddress().IsIPv6() ? AF_INET6
 			: Core::Unreachable<int>();
 
-		addrinfo* peerAddress = nullptr;
-		auto	  addrResult  = getaddrinfo(endpoint.GetAddress()->AsString().c_str(), std::to_string(endpoint.GetPort()).c_str(), &hints, &peerAddress);
-		if (addrResult != 0)
+
+		sockaddr_storage peer = endpoint.GetPlatformRepresentation();
+		socklen_t peerLen = 0;
+		switch (peer.ss_family)
 		{
-			Core::Logging::Error("Failed to resolve address information for endpoint: {}", endpoint.ToString());
-			freeaddrinfo(peerAddress);
-			return ErrorAddressResolution {};
+		case AF_INET:  peerLen = sizeof(sockaddr_in); break;
+		case AF_INET6: peerLen = sizeof(sockaddr_in6); break;
+		default: Core::Unreachable();
 		}
 
-		auto handle = socket(peerAddress->ai_family, peerAddress->ai_socktype, peerAddress->ai_protocol);
-		if (handle == -1)
+		auto socketHandle = socket(peer.ss_family, SOCK_STREAM, IPPROTO_TCP);
+		if (socketHandle == -1)
 		{
 			Core::Logging::Error("Failed to create TCP Socket for endpoint {}", endpoint.ToString());
-			freeaddrinfo(peerAddress);
 			return ErrorSocketCreation {};
 		}
 
-		auto connection = connect(handle, peerAddress->ai_addr, peerAddress->ai_addrlen);
+		auto connection = connect(socketHandle, (const struct sockaddr*) &peer, peerLen);
 		if (connection == -1)
 		{
 			Core::Logging::Error("Failed to estabilish TCP connection to endpoint {}", endpoint.ToString());
-			freeaddrinfo(peerAddress);
 			return ErrorAddressResolution {};
 		}
 
-		freeaddrinfo(peerAddress);
-		tcpSocket.mSocket	= handle;
-		tcpSocket.mEndpoint = endpoint;
+		TCPSocket tcpSocket(socketHandle, endpoint);
 
 		SOCKET_OPTION_TYPE keepAlive = 1;
 		SOCKET_ERROR_CODE_TYPE optResult =
@@ -74,8 +69,9 @@ namespace Strawberry::Net::Socket
 	}
 
 
-	TCPSocket::TCPSocket()
-		: mSocket(-1) {}
+	TCPSocket::TCPSocket(SocketHandle socketHandle, Endpoint endpoint)
+		: mSocket(socketHandle)
+		, mEndpoint(std::move(endpoint)) {}
 
 
 	TCPSocket::TCPSocket(TCPSocket&& other) noexcept

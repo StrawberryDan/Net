@@ -50,11 +50,11 @@ int main()
 	           messageB = CreateRandomMessage();
 
 
-	UDPSocket clientA = UDPSocket::CreateIPv4().Unwrap();
+	UDPSocket clientA = UDPSocket::Create().Unwrap();
 	clientA.Bind(portA).Unwrap();
 
 
-	UDPSocket clientB = UDPSocket::Create().Unwrap();
+	UDPSocket clientB = UDPSocket::CreateIPv4().Unwrap();
 	clientB.Bind(portB).Unwrap();
 
 

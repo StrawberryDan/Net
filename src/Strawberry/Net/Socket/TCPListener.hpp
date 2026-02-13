@@ -41,7 +41,8 @@ namespace Strawberry::Net::Socket
 		Core::Optional<TCPSocket> Accept() const	noexcept;
 
 	private:
-		TCPListener();
+		TCPListener(SocketHandle handle, Endpoint endpoint);
+
 
 	private:
 		SocketHandle	mSocket;

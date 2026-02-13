@@ -6,6 +6,12 @@
 #include "Strawberry/Core/Types/Result.hpp"
 
 
+#if STRAWBERRY_TARGET_WINDOWS
+#include <ws2def.h>
+#elif STRAWBERRY_TARGET_MAC || STRAWBERRY_TARGET_LINUS
+#include <sys/socket.h>
+#endif
+
 namespace Strawberry::Net
 {
 	class Endpoint
@@ -15,15 +21,11 @@ namespace Strawberry::Net
 		static Core::Result<Endpoint, Error> Resolve(const std::string& hostname, uint16_t port);
 		/// Parses strings of the form [hostname]:[port] and resolves IP
 		static Core::Result<Endpoint, Error> Resolve(const std::string& endpoint);
-		/// Parses strings of the form [hostname]:[port] without resolving IP
-		static Core::Result<Endpoint, Error> Parse(const std::string& endpoint);
 		/// Static shorthands for creating local host endpoints
 		static Endpoint LocalHostIPv4(uint16_t portNumber) noexcept;
 		static Endpoint LocalHostIPv6(uint16_t portNumber) noexcept;
 
 	public:
-		Endpoint();
-		Endpoint(const std::string& hostname, uint16_t port);
 		Endpoint(IPAddress address, uint16_t port);
 
 
@@ -33,7 +35,7 @@ namespace Strawberry::Net
 		}
 
 
-		[[nodiscard]] inline Core::Optional<IPAddress> GetAddress() const
+		[[nodiscard]] IPAddress GetAddress() const
 		{
 			return mAddress;
 		}
@@ -48,9 +50,13 @@ namespace Strawberry::Net
 		[[nodiscard]] std::string ToString() const noexcept;
 
 
+		/// Returns this endpoint in the platform's binary format.
+		[[nodiscard]] sockaddr_storage GetPlatformRepresentation(bool mapIPv6 = true) const noexcept;
+
+
 	private:
 		Core::Optional<std::string> mHostName;
-		Core::Optional<IPAddress>	mAddress;
-		uint16_t					mPort;
+		IPAddress                   mAddress;
+		uint16_t                    mPort;
 	};
 } // namespace Strawberry::Net
