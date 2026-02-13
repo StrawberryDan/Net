@@ -23,6 +23,7 @@ namespace Strawberry::Net
 	struct ErrorSystem {};
 	struct ErrorAddressInUse{};
 	struct ErrorMessageSize{};
+	struct ErrorIPAddressFamily{};
 	struct ErrorUnknown{};
 
 
@@ -45,5 +46,6 @@ namespace Strawberry::Net
 		ErrorSystem,
 		ErrorAddressInUse,
 		ErrorMessageSize,
+		ErrorIPAddressFamily,
 		ErrorUnknown>;
 }
