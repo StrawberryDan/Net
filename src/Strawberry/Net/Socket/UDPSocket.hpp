@@ -54,12 +54,12 @@ namespace Strawberry::Net::Socket
 		/// Without this call, this socket will not be able to receive
 		/// packets. Furthermore, without calling  Bind(), this socket will be
 		/// assigned a random port when sending packets for the first time.
-		Core::Result<void, Error> Bind(uint16_t portNumber) noexcept;
+		Core::Result<void, Error> Bind(const Endpoint& endpoint) noexcept;
 
 
 		/// Returns whether there is data waiting to be received on this socket.
 		[[nodiscard]] bool                           Poll() const;
-		/// Reads a packet of data from this socket. 
+		/// Reads a packet of data from this socket.
 		[[nodiscard]] Core::Result<UDPPacket, Error> Receive();
 		/// Sends a message over this socket to the given endpoint.
 		[[nodiscard]] Core::Result<void, Error>      Send(const Endpoint& endpoint, const Core::IO::DynamicByteBuffer& bytes) const;
@@ -72,9 +72,9 @@ private:
 
 		/// The handle to this socket.
 		SocketHandle             mSocket;
-		/// The port number to which this socket is bound.
+		/// The endoint to which this socket is bound.
 		/// Doesn't necessarily have a value until the first packet is sent.
-		Core::Optional<uint16_t> mPort;
+		Core::Optional<Endpoint> mEndpoint;
 		/// Boolean of whether this socket was created with IPv6 capacilities.
 		/// True for both pure V6 and Dualband sockets.
 		bool                     mIPv6;

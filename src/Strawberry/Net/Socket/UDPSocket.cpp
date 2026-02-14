@@ -1,6 +1,7 @@
 // Strawberry Net
 #include "Strawberry/Net/Socket/UDPSocket.hpp"
 #include "Strawberry/Net/Address.hpp"
+#include "Strawberry/Net/Endpoint.hpp"
 #include "Strawberry/Net/Error.hpp"
 #include "Strawberry/Net/Socket/API.hpp"
 #include "Strawberry/Net/Socket/Platform.hpp"
@@ -23,7 +24,6 @@
 #endif // STRAWBERRY_TARGET_WINDOWS
 // Standard Library
 #include <cerrno>
-#include <cstdint>
 
 
 namespace Strawberry::Net::Socket
@@ -96,7 +96,7 @@ namespace Strawberry::Net::Socket
 
 	UDPSocket::UDPSocket(UDPSocket&& other) noexcept
 		: mSocket(std::exchange(other.mSocket, -1))
-		, mPort(std::move(other.mPort))
+		, mEndpoint(std::move(other.mEndpoint))
 		, mIPv6(other.mIPv6)
 		, mBuffer(std::move(other.mBuffer)) {}
 
@@ -142,37 +142,18 @@ namespace Strawberry::Net::Socket
 		return static_cast<bool>(fds[0].revents & POLLIN);
 	}
 
-	Core::Result<void, Error> UDPSocket::Bind(uint16_t portNumber) noexcept
+	Core::Result<void, Error> UDPSocket::Bind(const Endpoint& endpoint) noexcept
 	{
-		Core::Logging::Info("Binding UDP Socket ({}) to port {}", mSocket, portNumber);
+		Core::Logging::Info("Binding UDP Socket ({}) to {}", mSocket, endpoint.ToString());
 
-		// Hints for getaddrinfo
-		addrinfo hints
-		{
-			.ai_flags = AI_ADDRCONFIG,
-			.ai_family = mIPv6 ? AF_INET6 : AF_INET,
-			.ai_socktype = SOCK_DGRAM,
-			.ai_protocol = IPPROTO_UDP
-		};
-		addrinfo* addressInfo = nullptr;
-		SOCKET_ERROR_CODE_TYPE error = 0;
-
-		// Localhost string for IPv6 and IPv4.
-		const char* address = mIPv6 ? "::" : "127.0.0.1";
-		// Get address info for localhost:port.
-		error = getaddrinfo(address, std::to_string(portNumber).c_str(), &hints, &addressInfo);
-		if (error != 0)
-		{
-			freeaddrinfo(addressInfo);
-			Core::Logging::Error("Failed to get address info at port {}", portNumber);
-			return ErrorSystem{};
-		}
+		sockaddr_storage peer = endpoint.GetPlatformRepresentation(mIPv6);
+		socklen_t peerLen = mIPv6 ? sizeof(sockaddr_in6) : sizeof(sockaddr_in);
 
 		// Bind the socket to the found address.
-		error = bind(mSocket, addressInfo->ai_addr, addressInfo->ai_addrlen);
+		int error = bind(mSocket, (const struct sockaddr*) &peer, peerLen);
 		if (error == SOCKET_ERROR_CODE)
 		{
-			Core::Logging::Error("Failed to bind UDP socket to port {}", portNumber);
+			Core::Logging::Error("Failed to bind UDP socket to {}", endpoint.ToString());
 			switch (auto error = API::GetError())
 			{
 			default:
@@ -181,18 +162,14 @@ namespace Strawberry::Net::Socket
 			}
 		}
 
-		// Free the address info we found.
-		freeaddrinfo(addressInfo);
-
-		mPort = portNumber;
+		mEndpoint = endpoint;
 		return Core::Success;
 	}
 
 	Core::Result<UDPPacket, Error> UDPSocket::Receive()
 	{
 		// Cannot receive packets if we have not bound ourselves to a port.
-		Core::Logging::ErrorIf(!mPort.HasValue(), "Attempted to receive a packet on an unbound UDP port!");
-		Core::Assert(mPort.HasValue());
+		Core::Assert(mEndpoint.HasValue(), "Attempted to receive a packet on an unbound UDP port!");
 
 		// Storage space for the peer's address.
 		sockaddr_storage peer{};
