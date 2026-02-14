@@ -24,6 +24,9 @@ namespace Strawberry::Net
 		/// Static shorthands for creating local host endpoints
 		static Endpoint LocalHostIPv4(uint16_t portNumber) noexcept;
 		static Endpoint LocalHostIPv6(uint16_t portNumber) noexcept;
+		// Static shorthands for creating wildcard endpoints.
+		static Endpoint AnyIPv4(uint16_t portNumber) noexcept;
+		static Endpoint AnyIPv6(uint16_t portNumber) noexcept;
 
 	public:
 		Endpoint(IPAddress address, uint16_t port);

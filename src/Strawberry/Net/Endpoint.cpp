@@ -95,6 +95,18 @@ namespace Strawberry::Net
 	}
 
 
+	Endpoint Endpoint::AnyIPv4(uint16_t portNumber) noexcept
+	{
+		return Endpoint(IPv6Address::Any(), portNumber);
+	}
+
+
+	Endpoint Endpoint::AnyIPv6(uint16_t portNumber) noexcept
+	{
+		return Endpoint(IPv4Address::Any(), portNumber);
+	}
+
+
 	Endpoint::Endpoint(IPAddress address, uint16_t port)
 		: mAddress(address)
 		, mPort(port) {}
