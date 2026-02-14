@@ -55,7 +55,7 @@ namespace Strawberry::Net
 		/// If mapipv6 is true, then IPv4 addresses will be mapped
 		/// over to IPv6. Addresses already in IPv6 are returned
 		/// as is.
-		[[nodiscard]] sockaddr_storage GetPlatformRepresentation(bool mapIPv6 = true) const noexcept;
+		[[nodiscard]] sockaddr_storage GetPlatformRepresentation(bool mapIPv6 = false) const noexcept;
 
 
 	private:
