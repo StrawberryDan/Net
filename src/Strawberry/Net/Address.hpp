@@ -16,6 +16,7 @@ namespace Strawberry::Net
 		// Static constructors
 		static Core::Optional<IPv4Address> Parse(const std::string& data);
 		static IPv4Address LocalHost() noexcept;
+		static IPv4Address Any() noexcept;
 
 		public:
 		// Constructors
@@ -51,6 +52,7 @@ namespace Strawberry::Net
 		static Core::Optional<IPv6Address> Parse(const std::string& string);
 		static IPv6Address FromIPv4(IPv4Address inputAddress) noexcept;
 		static IPv6Address LocalHost() noexcept;
+		static IPv6Address Any() noexcept;
 
 
 	public:

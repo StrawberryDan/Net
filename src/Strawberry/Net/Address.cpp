@@ -38,6 +38,12 @@ namespace Strawberry::Net
 	}
 
 
+	IPv4Address IPv4Address::Any() noexcept
+	{
+		return IPv4Address(0, 0, 0, 0);
+	}
+
+
 	Core::IO::ByteBuffer<4> IPv4Address::AsBytes() const
 	{
 		return mData;
@@ -87,6 +93,13 @@ namespace Strawberry::Net
 	{
 		Core::IO::ByteBuffer<16> bytes{};
 		bytes[15] = 1;
+		return IPv6Address(bytes);
+	}
+
+
+	IPv6Address IPv6Address::Any() noexcept
+	{
+		Core::IO::ByteBuffer<16> bytes{};
 		return IPv6Address(bytes);
 	}
 
