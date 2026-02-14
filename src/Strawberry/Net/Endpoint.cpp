@@ -1,5 +1,7 @@
 // StrawberryNet
 #include "Strawberry/Net/Endpoint.hpp"
+#include "Strawberry/Core/Assert.hpp"
+#include "Strawberry/Core/IO/DynamicByteBuffer.hpp"
 #include "Strawberry/Core/Markers.hpp"
 #include "Strawberry/Net/Address.hpp"
 #include <cstdint>
@@ -138,6 +140,43 @@ namespace Strawberry::Net
 			memcpy(&asIPv6->sin6_addr.s6_addr, addressBytes.Data(), 16);
 		}
 		else Core::Unreachable();
+
+
+		// Double check that the platform representation is correct using OS level functions
+#if STRAWBERRY_DEBUG
+		addrinfo hints
+		{
+			.ai_flags = AI_ALL | AI_ADDRCONFIG | (mapIPv6 ? AI_V4MAPPED : 0),
+			.ai_family = (mapIPv6 || GetAddress().IsIPv6()) ? AF_INET6 : AF_INET,
+		};
+		addrinfo* addrinfo = nullptr;
+		int getaddrinfoResult = getaddrinfo(GetAddress().AsString().c_str(),
+											std::to_string(mPort).c_str(),
+											&hints, &addrinfo);
+		Core::Logging::Info("{}", addrinfo->ai_family);
+		Core::AssertEQ(getaddrinfoResult, 0);
+		Core::AssertImplication(GetAddress().IsIPv4() && !mapIPv6, addrinfo->ai_family == AF_INET,
+								"Double check of IPv4 Platform Representation didn't match IP Family");
+		Core::AssertImplication(GetAddress().IsIPv6() || mapIPv6, addrinfo->ai_family == AF_INET6,
+								"Double check of IPv6 Platform Representation didn't match IP Family");
+
+		Core::IO::DynamicByteBuffer addrinfoBytes;
+		if (addrinfo->ai_family == AF_INET)
+		{
+			addrinfoBytes =
+				Core::IO::DynamicByteBuffer(&reinterpret_cast<sockaddr_in*>(addrinfo->ai_addr)->sin_addr, 4);
+		}
+		else if (addrinfo->ai_family == AF_INET6)
+		{
+			addrinfoBytes =
+				Core::IO::DynamicByteBuffer(&reinterpret_cast<sockaddr_in6*>(addrinfo->ai_addr)->sin6_addr, 16);
+		}
+		Core::AssertEQ(addressBytes, addrinfoBytes,
+					   fmt::format(
+								   "Double checking IP platform representation: address bytes did not match! (Real) {} != (Check) {}",
+								   addressBytes.AsHexString(), addrinfoBytes.AsHexString()));
+		freeaddrinfo(addrinfo);
+#endif
 
 		return result;
 	}
