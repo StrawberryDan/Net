@@ -24,6 +24,7 @@ namespace Strawberry::Net
 	struct ErrorAddressInUse{};
 	struct ErrorMessageSize{};
 	struct ErrorIPAddressFamily{};
+	struct ErrorAddressNotAvailable{};
 	struct ErrorUnknown{};
 
 
@@ -47,5 +48,6 @@ namespace Strawberry::Net
 		ErrorAddressInUse,
 		ErrorMessageSize,
 		ErrorIPAddressFamily,
+		ErrorAddressNotAvailable,
 		ErrorUnknown>;
 }
