@@ -153,7 +153,6 @@ namespace Strawberry::Net
 		int getaddrinfoResult = getaddrinfo(GetAddress().AsString().c_str(),
 											std::to_string(mPort).c_str(),
 											&hints, &addrinfo);
-		Core::Logging::Info("{}", addrinfo->ai_family);
 		Core::AssertEQ(getaddrinfoResult, 0);
 		Core::AssertImplication(GetAddress().IsIPv4() && !mapIPv6, addrinfo->ai_family == AF_INET,
 								"Double check of IPv4 Platform Representation didn't match IP Family");
