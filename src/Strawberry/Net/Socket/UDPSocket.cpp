@@ -272,6 +272,9 @@ namespace Strawberry::Net::Socket
 		{
 			switch (auto error = API::GetError())
 			{
+			case SOCKET_ERROR_CODE_TYPE(EADDRNOTAVAIL):
+				Core::Logging::Error("Unable to send UDP packet to {} because address was not available!", endpoint.ToString());
+				return ErrorAddressNotAvailable{};
 			case SOCKET_ERROR_TYPE_CODE(EINVAL):
 				Core::Logging::Error("Invalid argument passed to sendto in UDPSocket::Send!");
 				Core::Unreachable();
