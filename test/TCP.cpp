@@ -21,8 +21,8 @@ int main()
 	// Test with both IPv4 and IPv6 endpoints
 	std::array endpoints
 	{
-		Endpoint(IPv4Address::LocalHost(), 65535 - 1000),
-		Endpoint(IPv6Address::LocalHost(), 65535 - 1001)
+		Endpoint(IPv4Address::Any(), 65535 - 1000),
+		Endpoint(IPv6Address::Any(), 65535 - 1001)
 	};
 
 

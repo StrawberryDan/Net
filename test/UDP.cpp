@@ -42,8 +42,8 @@ int main()
 	// Succeeds if the messages are transmitted without error.
 
 
-	static constexpr uint16_t portA = 65535 - 1000,
-	                          portB = 65535 - 1001;
+	static constexpr uint16_t portA = 65535 - 1002,
+	                          portB = 65535 - 1003;
 
 
 	const auto messageA = CreateRandomMessage(),
@@ -51,11 +51,11 @@ int main()
 
 
 	UDPSocket clientA = UDPSocket::Create().Unwrap();
-	clientA.Bind(portA).Unwrap();
+	clientA.Bind(Endpoint::AnyIPv6(portA)).Unwrap();
 
 
 	UDPSocket clientB = UDPSocket::CreateIPv4().Unwrap();
-	clientB.Bind(portB).Unwrap();
+	clientB.Bind(Endpoint::AnyIPv4(portB)).Unwrap();
 
 
 	Core::Logging::Trace("Sending message A");
