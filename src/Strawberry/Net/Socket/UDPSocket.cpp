@@ -247,15 +247,6 @@ namespace Strawberry::Net::Socket
 
 	Core::Result<void, Error> UDPSocket::Send(const Endpoint& endpoint, const Core::IO::DynamicByteBuffer& bytes) const
 	{
-		// Hints for getaddrinfo
-		addrinfo  hints
-		{
-			.ai_flags = AI_ADDRCONFIG | (mIPv6 ? AI_V4MAPPED : 0),
-			.ai_socktype = SOCK_DGRAM,
-			.ai_protocol = IPPROTO_UDP,
-			.ai_family = mIPv6 ? AF_INET6 : AF_INET,
-		};
-
 		sockaddr_storage peer = endpoint.GetPlatformRepresentation(mIPv6);
 		socklen_t peerLen = 0;
 		switch (peer.ss_family)
