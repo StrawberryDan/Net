@@ -62,39 +62,23 @@ namespace Strawberry::Net::Socket
 		// Construct listener object.
 		TCPListener listener(socketHandle, endpoint);
 
-		// Get address info
-		addrinfo  hints
-			{
-				.ai_flags = AI_ADDRCONFIG,
-				.ai_family = addressFamily,
-				.ai_socktype = SOCK_STREAM,
-				.ai_protocol = IPPROTO_TCP
-			};
-		addrinfo* peerAddress = nullptr;
-		auto	  addrResult  = getaddrinfo(
-			endpoint.GetAddress().AsString().c_str(),
-			std::to_string(endpoint.GetPort()).c_str(),
-			&hints, &peerAddress);
-		if (addrResult != 0)
-		{
-			Core::Logging::Error("Failed to resolve the address: {}", endpoint.GetAddress().AsString());
-			freeaddrinfo(peerAddress);
-			return ErrorAddressResolution {};
-		}
-		Core::AssertEQ(peerAddress->ai_family, addressFamily);
-
+		sockaddr_storage peer = endpoint.GetPlatformRepresentation();
+		socklen_t peerLen = endpoint.GetAddress().IsIPv6() ? sizeof(sockaddr_in6) : sizeof(sockaddr_in);
 
 		// Bind Socket.
-		int bindResult = bind(listener.mSocket, peerAddress->ai_addr, peerAddress->ai_addrlen);
-		freeaddrinfo(peerAddress);
+		int bindResult = bind(listener.mSocket, (const sockaddr*) &peer, peerLen);
 		if (bindResult == SOCKET_ERROR_CODE)
 		{
-			auto error = API::GetError();
-			Core::Logging::Error("Failed to bind socket! Error code returned: {}", error);
-			switch (error)
+			switch (auto error = API::GetError())
 			{
-			case EADDRINUSE: return ErrorAddressInUse{};
-			default: Core::Unreachable();
+			case SOCKET_ERROR_TYPE_CODE(EAFNOSUPPORT):
+				Core::Logging::Error("Failed to bind TCPListener to {} because the address was not supported!", endpoint.ToString());
+				return ErrorIPAddressFamily{};
+			case SOCKET_ERROR_TYPE_CODE(EADDRINUSE):
+				Core::Logging::Error("Failed to bind TCPListener to {} because the address was in use!", endpoint.ToString());
+				return ErrorAddressInUse{};
+			default:
+				Core::Logging::Error("Failed to bind TCPListener to endpoint {}. Error code: {}.", endpoint.ToString(), error);
 			}
 		}
 
