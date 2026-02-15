@@ -11,52 +11,52 @@
 
 namespace Strawberry::Net::HTTP
 {
-    template<typename S>
-    class HTTPClientBase
-    {
-        public:
-            static constexpr size_t SOCKET_BUFFER_SIZE = 1024 * 1024 * 1;
+	template<typename S>
+	class HTTPClientBase
+	{
+	public:
+		static constexpr size_t SOCKET_BUFFER_SIZE = 1024 * 1024 * 1;
 
-        public:
-            /// Sends an HTTP Request
-            void SendRequest(const Request& request);
-            /// Waits for an HTTP Response
-            Response Receive();
-
-
-            /// Removes and returns the socket of an rvalue HTTP client.
-            Socket::BufferedSocket<S> IntoSocket() &&
-            {
-                return std::move(mSocket);
-            }
-
-        protected:
-            /// Connects to the given endpoint over HTTP
-            HTTPClientBase(const Endpoint& endpoint);
-
-        private:
-            /// Reads a line of input until a newline character from the socket.
-            std::string ReadLine();
-            /// Reads a chunked HTTP payload from the socket.
-            Core::IO::DynamicByteBuffer ReadChunkedPayload();
-
-        private:
-            Socket::BufferedSocket<S> mSocket;
-    };
+	public:
+		/// Sends an HTTP Request
+		void SendRequest(const Request& request);
+		/// Waits for an HTTP Response
+		Response Receive();
 
 
-    class HTTPClient : public HTTPClientBase<Socket::TCPSocket>
-    {
-        public:
-            explicit HTTPClient(const Net::Endpoint& endpoint);
-    };
+		/// Removes and returns the socket of an rvalue HTTP client.
+		Socket::BufferedSocket<S> IntoSocket() &&
+		{
+			return std::move(mSocket);
+		}
+
+	protected:
+		/// Connects to the given endpoint over HTTP
+		HTTPClientBase(const Endpoint& endpoint);
+
+	private:
+		/// Reads a line of input until a newline character from the socket.
+		std::string ReadLine();
+		/// Reads a chunked HTTP payload from the socket.
+		Core::IO::DynamicByteBuffer ReadChunkedPayload();
+
+	private:
+		Socket::BufferedSocket<S> mSocket;
+	};
 
 
-    class HTTPSClient : public HTTPClientBase<Socket::TLSSocket>
-    {
-        public:
-            explicit HTTPSClient(const Net::Endpoint& endpoint);
-    };
+	class HTTPClient : public HTTPClientBase<Socket::TCPSocket>
+	{
+	public:
+		explicit HTTPClient(const Net::Endpoint& endpoint);
+	};
+
+
+	class HTTPSClient : public HTTPClientBase<Socket::TLSSocket>
+	{
+	public:
+		explicit HTTPSClient(const Net::Endpoint& endpoint);
+	};
 } // namespace Strawberry::Net::HTTP
 
 

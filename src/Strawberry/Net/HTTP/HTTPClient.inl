@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Strawberry/Net/HTTP/HTTPClient.hpp"
 // Strawberry Core
 #include "Strawberry/Core/Assert.hpp"
 #include "Strawberry/Core/IO/Logging.hpp"
@@ -11,166 +12,166 @@
 
 namespace Strawberry::Net::HTTP
 {
-    template<typename S>
-    HTTPClientBase<S>::HTTPClientBase(const Net::Endpoint& endpoint)
-        : mSocket(Socket::BufferedSocket(S::Connect(endpoint).Unwrap(), SOCKET_BUFFER_SIZE)) {}
+	template<typename S>
+	HTTPClientBase<S>::HTTPClientBase(const Net::Endpoint& endpoint)
+		: mSocket(Socket::BufferedSocket(S::Connect(endpoint).Unwrap(), SOCKET_BUFFER_SIZE)) {}
 
 
-    template<typename S>
-    void HTTPClientBase<S>::SendRequest(const Request& request)
-    {
-        Core::IO::DynamicByteBuffer bytes;
+	template<typename S>
+	void HTTPClientBase<S>::SendRequest(const Request& request)
+	{
+		Core::IO::DynamicByteBuffer bytes;
 
-        std::string headerLine = fmt::format(
-            "{} {} HTTP/{}\r\n",
-            request.GetVerb().ToString(),
-            request.GetURI(),
-            request.GetVersion().ToString());
-        bytes.Write({headerLine.data(), headerLine.length()}).Unwrap();
-        for (const auto& [key, values]: *request.GetHeader())
-        {
-            for (const auto& value: values)
-            {
-                std::string formatted = fmt::format("{}: {}\r\n", key, value);
-                bytes.Write({formatted.data(), formatted.length()}).Unwrap();
-            }
-        }
+		std::string headerLine = fmt::format(
+											 "{} {} HTTP/{}\r\n",
+											 request.GetVerb().ToString(),
+											 request.GetURI(),
+											 request.GetVersion().ToString());
+		bytes.Write({headerLine.data(), headerLine.length()}).Unwrap();
+		for (const auto& [key, values]: *request.GetHeader())
+		{
+			for (const auto& value: values)
+			{
+				std::string formatted = fmt::format("{}: {}\r\n", key, value);
+				bytes.Write({formatted.data(), formatted.length()}).Unwrap();
+			}
+		}
 
-        std::vector<char> blankLine = {'\r', '\n'};
-        bytes.Write({blankLine.data(), blankLine.size()}).Unwrap();
+		std::vector<char> blankLine = {'\r', '\n'};
+		bytes.Write({blankLine.data(), blankLine.size()}).Unwrap();
 
-        if (request.GetPayload().Size() > 0)
-        {
-            bytes.Write({request.GetPayload().Data(), request.GetPayload().Size()}).Unwrap();
-        }
+		if (request.GetPayload().Size() > 0)
+		{
+			bytes.Write({request.GetPayload().Data(), request.GetPayload().Size()}).Unwrap();
+		}
 
-        mSocket.Write(bytes).Unwrap();
-    }
-
-
-    template<typename S>
-    Response HTTPClientBase<S>::Receive()
-    {
-        static const auto statusLinePattern = std::regex(R"(HTTP\/([^\s]+)\s+(\d{3})\s+([^\r]*)\r\n)");
-        static const auto headerLinePattern = std::regex(R"(([^:]+)\s*:\s*([^\r]+)\r\n)");
-
-        std::string currentLine;
-        bool        matched;
-        std::smatch matchResults;
-
-        do
-        {
-            currentLine = ReadLine();
-            matched     = std::regex_match(currentLine, matchResults, statusLinePattern);
-        }
-        while (!matched);
+		mSocket.Write(bytes).Unwrap();
+	}
 
 
-        std::string version    = matchResults[1],
-                    status     = matchResults[2],
-                    statusText = matchResults[3];
+	template<typename S>
+	Response HTTPClientBase<S>::Receive()
+	{
+		static const auto statusLinePattern = std::regex(R"(HTTP\/([^\s]+)\s+(\d{3})\s+([^\r]*)\r\n)");
+		static const auto headerLinePattern = std::regex(R"(([^:]+)\s*:\s*([^\r]+)\r\n)");
 
-        Response response(*Version::Parse(version), std::stoi(status), statusText);
+		std::string currentLine;
+		bool		matched;
+		std::smatch matchResults;
 
-        while (true)
-        {
-            currentLine = ReadLine();
-
-            if (currentLine == "\r\n")
-            {
-                break;
-            }
-            else if (std::regex_match(currentLine, matchResults, headerLinePattern))
-            {
-                response.GetHeader().Add(matchResults[1], matchResults[2]);
-            }
-        }
-
-        Core::IO::DynamicByteBuffer payload;
-        if (response.GetHeader().Contains("Transfer-Encoding"))
-        {
-            auto transferEncoding = response.GetHeader().Get("Transfer-Encoding");
-
-            if (transferEncoding == "chunked")
-            {
-                payload = ReadChunkedPayload();
-            }
-            else
-            {
-                Core::Logging::Error("Unsupported value for Transfer-Encoding: {}", transferEncoding);
-                Core::Unreachable();
-            }
-        }
-        else if (response.GetHeader().Contains("Content-Length"))
-        {
-            unsigned long contentLength = std::stoul(response.GetHeader().Get("Content-Length"));
-            if (contentLength > 0)
-            {
-                auto data = mSocket.Read(contentLength).Unwrap();
-                Core::Assert(data.Size() == contentLength);
-                payload.Push(data.Data(), data.Size());
-            }
-        }
-        response.SetPayload(payload);
-
-        return response;
-    }
+		do
+		{
+			currentLine = ReadLine();
+			matched		= std::regex_match(currentLine, matchResults, statusLinePattern);
+		}
+		while (!matched);
 
 
-    template<typename S>
-    Core::IO::DynamicByteBuffer HTTPClientBase<S>::ReadChunkedPayload()
-    {
-        std::string       line;
-        std::smatch       matchResults;
-        static const auto chunkSizeLine     = std::regex(R"(([0123456789abcdefABCDEF]+)\r\n)");
-        size_t            sumOfChunkLengths = 0;
+		std::string version	   = matchResults[1],
+			status	   = matchResults[2],
+			statusText = matchResults[3];
 
-        Core::IO::DynamicByteBuffer payload;
-        while (true)
-        {
-            line = this->ReadLine();
-            if (line == "\r\n")
-            {
-                break;
-            }
-            else if (!std::regex_match(line, matchResults, chunkSizeLine))
-            {
-                Core::Unreachable();
-            }
+		Response response(*Version::Parse(version), std::stoi(status), statusText);
+
+		while (true)
+		{
+			currentLine = ReadLine();
+
+			if (currentLine == "\r\n")
+			{
+				break;
+			}
+			else if (std::regex_match(currentLine, matchResults, headerLinePattern))
+			{
+				response.GetHeader().Add(matchResults[1], matchResults[2]);
+			}
+		}
+
+		Core::IO::DynamicByteBuffer payload;
+		if (response.GetHeader().Contains("Transfer-Encoding"))
+		{
+			auto transferEncoding = response.GetHeader().Get("Transfer-Encoding");
+
+			if (transferEncoding == "chunked")
+			{
+				payload = ReadChunkedPayload();
+			}
+			else
+			{
+				Core::Logging::Error("Unsupported value for Transfer-Encoding: {}", transferEncoding);
+				Core::Unreachable();
+			}
+		}
+		else if (response.GetHeader().Contains("Content-Length"))
+		{
+			unsigned long contentLength = std::stoul(response.GetHeader().Get("Content-Length"));
+			if (contentLength > 0)
+			{
+				auto data = mSocket.Read(contentLength).Unwrap();
+				Core::Assert(data.Size() == contentLength);
+				payload.Push(data.Data(), data.Size());
+			}
+		}
+		response.SetPayload(payload);
+
+		return response;
+	}
 
 
-            auto bytesToRead = std::stoul(matchResults[1], nullptr, 16);
-            if (bytesToRead > 0)
-            {
-                Core::IO::DynamicByteBuffer chunk;
-                chunk.Reserve(bytesToRead);
+	template<typename S>
+	Core::IO::DynamicByteBuffer HTTPClientBase<S>::ReadChunkedPayload()
+	{
+		std::string		  line;
+		std::smatch		  matchResults;
+		static const auto chunkSizeLine		= std::regex(R"(([0123456789abcdefABCDEF]+)\r\n)");
+		size_t			  sumOfChunkLengths = 0;
 
-                chunk.Push(this->mSocket.ReadAll(bytesToRead).Unwrap());
-                sumOfChunkLengths += chunk.Size();
-                Core::Assert(chunk.Size() == bytesToRead);
-                payload.Push(chunk);
-            }
-
-            auto CRLF = this->ReadLine();
-            Core::Assert(CRLF == "\r\n");
-
-            if (bytesToRead == 0) break;
-        }
-
-
-        Core::Assert(sumOfChunkLengths == payload.Size());
-        return payload;
-    }
+		Core::IO::DynamicByteBuffer payload;
+		while (true)
+		{
+			line = this->ReadLine();
+			if (line == "\r\n")
+			{
+				break;
+			}
+			else if (!std::regex_match(line, matchResults, chunkSizeLine))
+			{
+				Core::Unreachable();
+			}
 
 
-    template<typename S>
-    std::string HTTPClientBase<S>::ReadLine()
-    {
-        std::string line;
-        while (!line.ends_with("\r\n"))
-        {
-            line += mSocket.ReadAll(1).Unwrap().template Into<char>();
-        }
-        return line;
-    }
+			auto bytesToRead = std::stoul(matchResults[1], nullptr, 16);
+			if (bytesToRead > 0)
+			{
+				Core::IO::DynamicByteBuffer chunk;
+				chunk.Reserve(bytesToRead);
+
+				chunk.Push(this->mSocket.ReadAll(bytesToRead).Unwrap());
+				sumOfChunkLengths += chunk.Size();
+				Core::Assert(chunk.Size() == bytesToRead);
+				payload.Push(chunk);
+			}
+
+			auto CRLF = this->ReadLine();
+			Core::Assert(CRLF == "\r\n");
+
+			if (bytesToRead == 0) break;
+		}
+
+
+		Core::Assert(sumOfChunkLengths == payload.Size());
+		return payload;
+	}
+
+
+	template<typename S>
+	std::string HTTPClientBase<S>::ReadLine()
+	{
+		std::string line;
+		while (!line.ends_with("\r\n"))
+		{
+			line += mSocket.ReadAll(1).Unwrap().template Into<char>();
+		}
+		return line;
+	}
 } // namespace Strawberry::Net::HTTP
