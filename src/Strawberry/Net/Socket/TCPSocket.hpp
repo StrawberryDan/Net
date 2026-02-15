@@ -54,5 +54,6 @@ namespace Strawberry::Net::Socket
 
 		SocketHandle mSocket;
 		Endpoint	 mEndpoint;
+		Core::IO::DynamicByteBuffer mBuffer;
 	};
 } // namespace Strawberry::Net::Socket

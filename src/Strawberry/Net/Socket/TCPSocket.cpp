@@ -1,5 +1,6 @@
 // Strawberry Net
 #include "Strawberry/Net/Socket/TCPSocket.hpp"
+#include "Strawberry/Core/IO/DynamicByteBuffer.hpp"
 #include "Strawberry/Net/Socket/API.hpp"
 #include "Strawberry/Net/Socket/Platform.hpp"
 // Strawberry Core
@@ -76,7 +77,8 @@ namespace Strawberry::Net::Socket
 
 	TCPSocket::TCPSocket(TCPSocket&& other) noexcept
 		: mSocket(std::exchange(other.mSocket, -1))
-		, mEndpoint(std::move(other.mEndpoint)) {}
+		, mEndpoint(std::move(other.mEndpoint))
+		, mBuffer(std::move(other.mBuffer)) {}
 
 
 	TCPSocket& TCPSocket::operator=(TCPSocket&& other) noexcept
@@ -126,9 +128,9 @@ namespace Strawberry::Net::Socket
 
 	StreamReadResult TCPSocket::Read(size_t length)
 	{
-		auto buffer = Core::IO::DynamicByteBuffer::Zeroes(length);
+		if (mBuffer.Size() < length) mBuffer = Core::IO::DynamicByteBuffer::Zeroes(length);
 
-		auto recvResult = recv(mSocket, reinterpret_cast<char*>(buffer.Data()), buffer.Size(), 0);
+		auto recvResult = recv(mSocket, reinterpret_cast<char*>(mBuffer.Data()), mBuffer.Size(), 0);
 		if (recvResult == SOCKET_ERROR_CODE)
 		{
 			switch (auto error = API::GetError())
@@ -140,22 +142,22 @@ namespace Strawberry::Net::Socket
 		}
 
 		Core::Assert(recvResult > 0);
-		buffer.Resize(recvResult);
-		return buffer;
+		return Core::IO::DynamicByteBuffer(mBuffer.Data(), length);
 	}
 
 
 	StreamReadResult TCPSocket::ReadAll(size_t length)
 	{
-		auto buffer = Core::IO::DynamicByteBuffer::WithCapacity(length);
+		size_t bytesRead = 0;
+		if (mBuffer.Size() < length) mBuffer = Core::IO::DynamicByteBuffer::Zeroes(length);
 
-		while (buffer.Size() < length)
+		while (bytesRead < length)
 		{
-			auto read = Read(length - buffer.Size());
-
+			auto read = Read(length - bytesRead);
 			if (read.IsOk())
 			{
-				buffer.Push(read.Unwrap());
+				memcpy(mBuffer.Data() + bytesRead, read->Data(), read->Size());
+				bytesRead += read->Size();
 			}
 			else
 			{
@@ -163,7 +165,7 @@ namespace Strawberry::Net::Socket
 			}
 		}
 
-		return buffer;
+		return Core::IO::DynamicByteBuffer(mBuffer.Data(), length);
 	}
 
 
